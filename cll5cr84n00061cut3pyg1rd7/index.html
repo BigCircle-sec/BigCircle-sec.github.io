@@ -19,16 +19,16 @@
     <meta name="description" content="CVE-2019-14271 docker cp漏洞分析漏洞简介该漏洞是由于docker cp从不受信任的位置加载了动态库所导致的。当用户运行docker cp命令时，docker会调用docker-tar，docker-untar命令对文件进行打包。而在打包动作之前会先使用chroot进入容器内部。但非静态编译版本的docker在docker-tar的打包过程中会加载外部动态库，由于已经chro">
 <meta property="og:type" content="article">
 <meta property="og:title" content="CVE-2019-14271 docker cp漏洞分析">
-<meta property="og:url" content="http://example.com/cll58pows0008kcut6wvr99tf/index.html">
+<meta property="og:url" content="http://example.com/cll5cr84n00061cut3pyg1rd7/index.html">
 <meta property="og:site_name" content="BigCircle-sec&#39;s Blog">
 <meta property="og:description" content="CVE-2019-14271 docker cp漏洞分析漏洞简介该漏洞是由于docker cp从不受信任的位置加载了动态库所导致的。当用户运行docker cp命令时，docker会调用docker-tar，docker-untar命令对文件进行打包。而在打包动作之前会先使用chroot进入容器内部。但非静态编译版本的docker在docker-tar的打包过程中会加载外部动态库，由于已经chro">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://example.com/img/bVc8Yxo">
+<meta property="og:image" content="http://example.com/.com//bVc8Yxo">
 <meta property="article:published_time" content="2023-07-30T10:13:02.907Z">
 <meta property="article:modified_time" content="2023-07-30T10:16:12.003Z">
 <meta property="article:author" content="BigCircle">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://example.com/img/bVc8Yxo">
+<meta name="twitter:image" content="http://example.com/.com//bVc8Yxo">
   
   
   
@@ -257,7 +257,7 @@
 <p>可以发现，此时会调用到<code>_C_getpwuid_r</code>函数。而该函数又会调用到cgo中的<code>mygetpwuid_r</code>函数</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-keyword">struct</span> passwd <span class="hljs-title function_">mygetpwuid_r</span><span class="hljs-params">(<span class="hljs-type">int</span> uid, <span class="hljs-type">char</span> *buf, <span class="hljs-type">size_t</span> buflen, <span class="hljs-type">int</span> *found, <span class="hljs-type">int</span> *perr)</span> &#123;<br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">passwd</span> <span class="hljs-title">pwd</span>;</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">passwd</span> *<span class="hljs-title">result</span>;</span><br>	<span class="hljs-built_in">memset</span> (&amp;pwd, <span class="hljs-number">0</span>, <span class="hljs-keyword">sizeof</span>(pwd));<br>	*perr = getpwuid_r(uid, &amp;pwd, buf, buflen, &amp;result);<br>	*found = result != <span class="hljs-literal">NULL</span>;<br>	<span class="hljs-keyword">return</span> pwd;<br>&#125;<br></code></pre></td></tr></table></figure>
 <p>其中，使用了<code>getpwuid_r</code>函数。使用该函数需要加载nsswitch动态库，但此时已经通过relChroot函数chroot到了容器文件系统中，因此会从容器中动态加载nsswitch库。此时漏洞产生。<br>该漏洞出现过程中的函数调用链：<br><code>getContainersArchive</code>-&gt;<code>s.backend.ContainerArchivePath</code>-&gt;<code>...</code>-&gt;<code>invokerPack</code>-&gt;<code>tar</code>-&gt;<code>TarWithOptions</code>-&gt;<code>addTarFile</code>-&gt;<code>FileInfoHeader</code>-&gt;<code>tar.FileInfoHeader</code>-&gt;<code>statUnix</code>-&gt;<code>user.LookuoId</code>-&gt;<code>_C_getpwuid_r</code>-&gt;<code>C.mygetpwuid_r</code>-&gt;<code>getpwuid_r</code></p>
-<h2 id="官方修复代码"><a href="#官方修复代码" class="headerlink" title="官方修复代码"></a>官方修复代码</h2><p>官方的修复代码的逻辑很简单，就是在chroot之前加载nsswitch动态库，这样就不会在不受信任的容器内部加载动态库了。<br><img src="/img/bVc8Yxo" srcset="/img/loading.gif" lazyload alt="截屏2023-07-25 11.26.27.png"></p>
+<h2 id="官方修复代码"><a href="#官方修复代码" class="headerlink" title="官方修复代码"></a>官方修复代码</h2><p>官方的修复代码的逻辑很简单，就是在chroot之前加载nsswitch动态库，这样就不会在不受信任的容器内部加载动态库了。<br><img src="/.com//bVc8Yxo" srcset="/img/loading.gif" lazyload alt="截屏2023-07-25 11.26.27.png"></p>
 
                 
               </div>
@@ -277,7 +277,7 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/cll58pows0007kcut1fvm3hq0/" title="CVE-2018-15664符号链接替换漏洞分析">
+                      <a href="/cll5cr84j00041cutgpnzal8u/" title="CVE-2018-15664符号链接替换漏洞分析">
                         <i class="iconfont icon-arrowleft"></i>
                         <span class="hidden-mobile">CVE-2018-15664符号链接替换漏洞分析</span>
                         <span class="visible-mobile">Previous</span>
@@ -287,7 +287,7 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/cll58powp0004kcutagaf7rbh/" title="docker源码阅读，开发，调试环境搭建">
+                      <a href="/cll5cr84o00071cut51tx2p8q/" title="docker源码阅读，开发，调试环境搭建">
                         <span class="hidden-mobile">docker源码阅读，开发，调试环境搭建</span>
                         <span class="visible-mobile">Next</span>
                         <i class="iconfont icon-arrowright"></i>
