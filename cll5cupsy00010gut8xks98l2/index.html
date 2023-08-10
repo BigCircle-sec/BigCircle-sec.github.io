@@ -16,26 +16,23 @@
   <meta name="author" content="BigCircle">
   <meta name="keywords" content="">
   
-    <meta name="description" content="docker源码阅读，开发，调试环境搭建简介docker分为两部分，docker client 和docker engine。docker client就是我们日常使用的docker命令行工具，用户通过docker client指定参数向docker engine发送信息，docker engine接受到信息后做出实际的操作。目前这两部分的代码已经分离，其中docker client代码位于htt">
+    <meta name="description" content="AWS Identity and Access Management (IAM) 是一种 Web 服务，可以帮助您安全地控制对 AWS 资源的访问。借助 IAM，可以集中管理控制用户可访问哪些 AWS 资源的权限。可以使用 IAM 来控制谁通过了身份验证（准许登录）并获得授权（拥有权限）来使用资源。 IAM相关概念Resources: IAM中的对象，如user,group,Role,Policy">
 <meta property="og:type" content="article">
-<meta property="og:title" content="docker源码阅读，开发，调试环境搭建">
-<meta property="og:url" content="http://example.com/cll5cr84o00071cut51tx2p8q/index.html">
+<meta property="og:title" content="IAM学习">
+<meta property="og:url" content="http://example.com/cll5cupsy00010gut8xks98l2/index.html">
 <meta property="og:site_name" content="BigCircle-sec&#39;s Blog">
-<meta property="og:description" content="docker源码阅读，开发，调试环境搭建简介docker分为两部分，docker client 和docker engine。docker client就是我们日常使用的docker命令行工具，用户通过docker client指定参数向docker engine发送信息，docker engine接受到信息后做出实际的操作。目前这两部分的代码已经分离，其中docker client代码位于htt">
+<meta property="og:description" content="AWS Identity and Access Management (IAM) 是一种 Web 服务，可以帮助您安全地控制对 AWS 资源的访问。借助 IAM，可以集中管理控制用户可访问哪些 AWS 资源的权限。可以使用 IAM 来控制谁通过了身份验证（准许登录）并获得授权（拥有权限）来使用资源。 IAM相关概念Resources: IAM中的对象，如user,group,Role,Policy">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://example.com/.com//bVc8ZNO">
-<meta property="og:image" content="http://example.com/.com//bVc8ZPn">
-<meta property="og:image" content="http://example.com/.com//bVc8ZNO">
-<meta property="og:image" content="http://example.com/.com//bVc8ZPf">
-<meta property="article:published_time" content="2023-07-30T10:12:08.275Z">
-<meta property="article:modified_time" content="2023-07-30T10:16:22.780Z">
+<meta property="og:image" content="http://example.com/.com//bVc89Oz">
+<meta property="article:published_time" content="2023-08-07T15:35:56.031Z">
+<meta property="article:modified_time" content="2023-08-07T15:36:22.588Z">
 <meta property="article:author" content="BigCircle">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://example.com/.com//bVc8ZNO">
+<meta name="twitter:image" content="http://example.com/.com//bVc89Oz">
   
   
   
-  <title>docker源码阅读，开发，调试环境搭建 - BigCircle-sec&#39;s Blog</title>
+  <title>IAM学习 - BigCircle-sec&#39;s Blog</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -165,7 +162,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="docker源码阅读，开发，调试环境搭建"></span>
+            <span id="subtitle" data-typed-text="IAM学习"></span>
           
         </div>
 
@@ -181,7 +178,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.4k words
+          3.4k words
         
       </span>
     
@@ -192,7 +189,7 @@
         
         
         
-          12 mins
+          28 mins
         
       </span>
     
@@ -229,27 +226,108 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">docker源码阅读，开发，调试环境搭建</h1>
+            <h1 id="seo-header">IAM学习</h1>
             
             
               <div class="markdown-body">
                 
-                <h1 id="docker源码阅读，开发，调试环境搭建"><a href="#docker源码阅读，开发，调试环境搭建" class="headerlink" title="docker源码阅读，开发，调试环境搭建"></a>docker源码阅读，开发，调试环境搭建</h1><h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>docker分为两部分，docker client 和docker engine。docker client就是我们日常使用的docker命令行工具，用户通过docker client指定参数向docker engine发送信息，docker engine接受到信息后做出实际的操作。目前这两部分的代码已经分离，其中docker client代码位于<a target="_blank" rel="noopener" href="https://github.com/docker/cli,docker">https://github.com/docker/cli,docker</a> engine(更名为moby)代码位于<a target="_blank" rel="noopener" href="https://github.com/moby/moby%E3%80%82%E7%94%B1%E4%BA%8E%E5%9C%A8%E7%BC%96%E8%AF%91%E6%97%B6%E4%BC%9A%E4%BD%BF%E7%94%A8%E5%88%B0docker%E5%92%8Cgo%EF%BC%8C%E6%89%80%E4%BB%A5%E9%9C%80%E8%A6%81%E9%A2%84%E5%85%88%E8%A3%85%E5%A5%BDdocker%E5%92%8Cgo">https://github.com/moby/moby。由于在编译时会使用到docker和go，所以需要预先装好docker和go</a></p>
-<h2 id="docker-client"><a href="#docker-client" class="headerlink" title="docker client"></a>docker client</h2><p>首先下载源码</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">git clone https://github.com/docker/cli.git<br></code></pre></td></tr></table></figure>
-<p>之后将下载好的源码放到$GOPATH&#x2F;src&#x2F;github.com&#x2F;docker下<br><img src="/.com//bVc8ZNO" srcset="/img/loading.gif" lazyload alt="截屏2023-07-26 15.22.09.png"><br>进入到cli目录下执行：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">make -f docker.Makefile binary<br></code></pre></td></tr></table></figure>
-<p>顺利执行完毕后会在当前目录下的build下发现编译好的docker，此时docker client编译完成。当我们想要做出更改的时候，修改完代码再执行一次上面的make命令即可重新编译成功。<br>需要注意的是，如果我们想用dlv或者gdb对编译好的可执行文件进行调试就需要再编译时保留调试信息，但是默认情况下编译出来的可执行文件是不包含调试信息的，我们需要在&#x2F;scripts&#x2F;build&#x2F;.variables下将GO_LDFLAGS的”-w”删除掉。<br><img src="/.com//bVc8ZPn" srcset="/img/loading.gif" lazyload alt="截屏2023-07-26 15.34.17.png"></p>
-<h2 id="moby"><a href="#moby" class="headerlink" title="moby"></a>moby</h2><p>同样，首先下载源码</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">git clone https://github.com/moby/moby.git<br></code></pre></td></tr></table></figure>
-<p>之后将下载好的源码放到$GOPATH&#x2F;src&#x2F;github.com&#x2F;docker下，并将其重命名为docker<br><img src="/.com//bVc8ZNO" srcset="/img/loading.gif" lazyload alt="截屏2023-07-26 15.22.09.png"><br>进入到docker目录下执行：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">make binary   （静态编译）<br>make dynbinary (动态编译)<br></code></pre></td></tr></table></figure>
-<p>顺利执行完毕后会在当前目录下的bundles&#x2F;binary下发现dockerd可执行文件（如果是动态编译的话可执行文件会存放在bundles&#x2F;dynbinary下）<br>同样，如果我们想要使用dlv或者gdb等对dockerd进行调试，那我们就需要保留调试信息。在hack&#x2F;make.sh中将LDFLAGS的“-w”去掉<br><img src="/.com//bVc8ZPf" srcset="/img/loading.gif" lazyload alt="截屏2023-07-26 15.33.55.png"></p>
-<h2 id="联动"><a href="#联动" class="headerlink" title="联动"></a>联动</h2><p>至此docker client和moby的编译工作已经完成，下一步是需要让编译好的docker client使用编译好的moby作为docker daemon。此时我们需要先将原有的docker停止</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">systemctl stop docker<br>systemctl stop docker.socket<br></code></pre></td></tr></table></figure>
-<p>之后先进入GOPATH&#x2F;src&#x2F;github.com&#x2F;docker&#x2F;docker&#x2F;bundles&#x2F;binary下启动dockerd</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">./dockerd<br></code></pre></td></tr></table></figure>
-<p>此时使用$GOPATH&#x2F;src&#x2F;github.com&#x2F;docker&#x2F;cli&#x2F;build下的docker client时，它会自动将请求发送到自行编译的moby上。</p>
+                <p>AWS Identity and Access Management (IAM) 是一种 Web 服务，可以帮助您安全地控制对 AWS 资源的访问。借助 IAM，可以集中管理控制用户可访问哪些 AWS 资源的权限。可以使用 IAM 来控制谁通过了身份验证（准许登录）并获得授权（拥有权限）来使用资源。</p>
+<h2 id="IAM相关概念"><a href="#IAM相关概念" class="headerlink" title="IAM相关概念"></a>IAM相关概念</h2><p>Resources: IAM中的对象，如user,group,Role,Policy等<br>Identities: 被赋予policy的对象<br>Entities: 用来鉴权的对象<br>Principals:认证主体，可请求对 AWS 资源执行操作的人类用户或工作负载。在身份验证后，可以向主体授予永久或临时凭证，以允许其向 AWS 发出请求，具体取决于主体类型</p>
+<h2 id="IAM工作流程简析"><a href="#IAM工作流程简析" class="headerlink" title="IAM工作流程简析"></a>IAM工作流程简析</h2><p>下图是aws官网提供的IAM工作原理图<br><img src="/.com//bVc89Oz" srcset="/img/loading.gif" lazyload alt="截屏2023-08-07 20.17.52.png"><br>当我们想要对某个资源进行某些操作时首先会经过Authentication阶段，该阶段主要是为了验证身份的合法性，即验证“你是谁”。当鉴权通过后，此次操作的请求会进入Authorization阶段，该阶段主要是为了验证操作的合法性，即验证“你有没有权限做这个操作”，该阶段会通过policy进行验证，在验证时依照以下几个原则进行检查：<br>    - 默认情况下，所有request都被拒绝<br>    - 被显式授权的操作才可以执行<br>    - 多个policy存在时只要有一个policy拒绝了某个操作，那么该操作就会被拒绝（拒绝优先级大于允许）<br>当Authorization阶段判定当前操作可以执行后会根据请求中的信息对相应的资源进行操作。</p>
+<h2 id="IAM-policy"><a href="#IAM-policy" class="headerlink" title="IAM policy"></a>IAM policy</h2><p>上面提到，在Authorization阶段会使用policy进行验证，那么什么是policy呢？在AWS中，权限会通过policy的形式被赋予给用户&#x2F;组&#x2F;角色等，通常是以json形式存在的。通常情况下，AWS中有以下几种policy：</p>
+<ol>
+<li>identity-based policy： 赋予给用户&#x2F;组&#x2F;角色的policy，用来制定用户&#x2F;组&#x2F;角色可以进行哪些操作。</li>
+<li>resource-based policy: 赋予给S3等资源的policy，用来制定某些用户可以对该资源进行什么样的操作</li>
+<li>permissions boundaries： 针对identity-based policy，用来能够赋予给用户&#x2F;组&#x2F;角色的最大权限集合（对resource-based policy无效）</li>
+<li>Organizations SCPs： 在组织中，对组织内部所有的账号设置可用的最大权限的集合</li>
+<li>Access Control Lists：控制其他账号中的用户访问本账号资源的policy</li>
+<li>session policy：当使用AWS CLI 或者AWS API时限制了用户&#x2F;角色传递给session的权限的最大集合</li>
+</ol>
+<p>该条policy为identity-based policy，表示可以对所有的S3资源进行只读操作，将这条规则赋予给用户&#x2F;组&#x2F;角色后，他们就可以对所有的S3资源进行只读操作</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;Version&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;2012-10-17&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;Statement&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>    <span class="hljs-punctuation">&#123;</span><br>      <span class="hljs-attr">&quot;Effect&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Allow&quot;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;Action&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>        <span class="hljs-string">&quot;s3:Get*&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;s3:List*&quot;</span><br>      <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;Resource&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;*&quot;</span><br>    <span class="hljs-punctuation">&#125;</span><br>  <span class="hljs-punctuation">]</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+<p>该条policy为resource-based policy，表示所有认证主体都可以对corp-fs-web-bucket下的所有资源进行读取操作</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;Version&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;2012-10-17&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;Statement&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>        <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;Effect&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Allow&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;Principal&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;*&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;Action&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;s3:GetObject&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;Resource&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;arn:aws:s3:::corp-fs-web-bucket/*&quot;</span><br>        <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">]</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+<p>下面简单介绍一下IAM JSON策略语言的语法：<br>总体来说一个policy要包括以下三个部分：version_block,id_block,statement_block。</p>
+<ol>
+<li>version_block可选项，用于定义策略语言的版本，常用的有”2008-10-17”和“2012-10-17”</li>
+<li>id_block可选项，用来表示policy的id，可以在resoucre-based policy中使用，不能在identity-based policy中使用</li>
+<li>statement_block表示当前的policy中不同的权限语句，一个statement_block包括以下几部分：</li>
+</ol>
+<ul>
+<li>sid_block： 可选项，用于区分不同的权限语句</li>
+<li>principal_block： 可选项，用于指定权限语句赋予的认证主体，identity-based policy无需制定，因为该类规则被赋予给用户&#x2F;组&#x2F;角色时就隐式地制定了principal。resource-based policy需要指定</li>
+<li>effect_block：表示允许还是拒绝该条操作，可选值包括ALLOW和DENY</li>
+<li>action_block：表示该条权限语句影响的操作列表</li>
+<li>resource_block：表示该条语句影响的资源列表</li>
+<li>condition_block： 可选项，用于更加精细地控制用户究竟能访问资源下的哪些数据</li>
+</ul>
+<p>其中，resource_block部分需要使用ARN进行指定</p>
+<h2 id="ARN"><a href="#ARN" class="headerlink" title="ARN"></a>ARN</h2><p>ARN（Amazon Resource Name）的格式如下：<br><code>arn:partition:service:region:account:resource</code><br>其中各个部分代表的含义为：</p>
+<ul>
+<li>partition 用于标识资源所在的分区。对于标准 AWS 区域，分区是 aws。如果资源位于其他分区，则分区是 aws-partitionname。例如，中国（北京）区域中的资源的分区为 aws-cn。您不能在不同分区的账户之间委派访问权限。</li>
+<li>service 标识 AWS 产品。IAM 资源始终使用 iam。</li>
+<li>region 标识资源的区域。对于 IAM 资源，它始终保持空白。</li>
+<li>account 指定没有连字符的 AWS 账户 ID。</li>
+<li>resource 按名称标识特定资源。</li>
+</ul>
+<p>示例：<br>    arn:aws:iam::account:root<br>    arn:aws:iam::account:user&#x2F;user-name-with-path<br>    arn:aws:iam::account:group&#x2F;group-name-with-path<br>    arn:aws:iam::account:role&#x2F;role-name-with-path<br>    arn:aws:iam::account:policy&#x2F;policy-name-with-path<br>    arn:aws:iam::account:instance-profile&#x2F;instance-profile-name-with-pat<br>由于IAM是全球资源，所以IAM的ARM的region部分为空<br>大多数情况下我们都会使用ARN指定一个资源，但是除了ARN意外，还可以使用资源的唯一ID进行指定。并且我们可以通过资源的唯一ID的前缀判断当前资源时哪一类资源：</p>
+<table>
+<thead>
+<tr>
+<th>前缀</th>
+<th>资源类型</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ABIA</td>
+<td>AWS STS 服务持有者令牌</td>
+</tr>
+<tr>
+<td>ACCA</td>
+<td>上下文特定凭证</td>
+</tr>
+<tr>
+<td>AGPA</td>
+<td>用户组</td>
+</tr>
+<tr>
+<td>AIDA</td>
+<td>IAM 用户</td>
+</tr>
+<tr>
+<td>AIPA</td>
+<td>Amazon EC2 实例配置文件</td>
+</tr>
+<tr>
+<td>AKIA</td>
+<td>访问密钥</td>
+</tr>
+<tr>
+<td>ANPA</td>
+<td>托管策略</td>
+</tr>
+<tr>
+<td>ANVA</td>
+<td>托管策略中的版本</td>
+</tr>
+<tr>
+<td>APKA</td>
+<td>公有密钥</td>
+</tr>
+<tr>
+<td>AROA</td>
+<td>角色</td>
+</tr>
+<tr>
+<td>ASCA</td>
+<td>证书</td>
+</tr>
+<tr>
+<td>ASIA</td>
+<td>临时 (AWS STS) 访问密钥 ID 使用此前缀，但仅在与秘密访问密钥和会话令牌结合使用时才具有唯一性。</td>
+</tr>
+</tbody></table>
+<p> |</p>
 
                 
               </div>
@@ -269,9 +347,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/cll5cr84n00061cut3pyg1rd7/" title="CVE-2019-14271 docker cp漏洞分析">
+                      <a href="/cll5cupt200030gut90fm4zt4/" title="BIGIAM CTF writeup">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">CVE-2019-14271 docker cp漏洞分析</span>
+                        <span class="hidden-mobile">BIGIAM CTF writeup</span>
                         <span class="visible-mobile">Previous</span>
                       </a>
                     
@@ -279,8 +357,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/cll5cr84q00081cutgjk35hrs/" title="docker cp源码分析">
-                        <span class="hidden-mobile">docker cp源码分析</span>
+                      <a href="/cll5cupt700060gut0tvx2isp/" title="CVE-2022-23648漏洞分析">
+                        <span class="hidden-mobile">CVE-2022-23648漏洞分析</span>
                         <span class="visible-mobile">Next</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
